@@ -10,12 +10,12 @@ PadelApp.state = (function () {
       format: 'americano',
       numCourts: 1,
       totalPoints: 21,
-      compensation: false,
+      compensation: true,
       scoringPriority: [
+        { key: 'points', dir: 'desc' },
         { key: 'wins', dir: 'desc' },
         { key: 'diff', dir: 'desc' },
-        { key: 'points', dir: 'desc' },
-        { key: 'matches', dir: 'asc' }
+        { key: 'losses', dir: 'asc' }
       ]
     };
   }
