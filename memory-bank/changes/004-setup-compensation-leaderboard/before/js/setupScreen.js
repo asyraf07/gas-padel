@@ -23,13 +23,9 @@ PadelApp.setup = (function () {
     return g === 'F' ? '<span class="g g-f">F</span>' : '<span class="g g-m">M</span>';
   }
 
-  function minPlayers() {
-    return (PadelApp.state.settings().numCourts || 1) * 4;
-  }
-
   function playerRows() {
     var pl = PadelApp.state.players();
-    if (!pl.length) return '<p class="muted">No players yet. Add at least ' + minPlayers() + '.</p>';
+    if (!pl.length) return '<p class="muted">No players yet. Add at least 4.</p>';
     return pl.map(function (p, i) {
       return '<div class="ply" data-id="' + p.id + '">' +
         '<span class="gidx">' + (i + 1) + '</span>' + gb(p.gender) +
@@ -63,8 +59,7 @@ PadelApp.setup = (function () {
 
   function warnHtml() {
     var act = PadelApp.state.players().filter(function (p) { return p.active; }).length;
-    var min = minPlayers();
-    if (act > 0 && act < min) return '<div class="warn">A game needs at least ' + min + ' active players (' + PadelApp.state.settings().numCourts + ' court' + (PadelApp.state.settings().numCourts > 1 ? 's' : '') + '). You have ' + act + '.</div>';
+    if (act > 0 && act < 4) return '<div class="warn">A game needs at least 4 active players. You have ' + act + '.</div>';
     return '';
   }
 
@@ -95,9 +90,6 @@ PadelApp.setup = (function () {
       '<div class="form-row">' +
       '<label>Total points <input id="s-wins" type="number" min="1" max="999" value="' + s.totalPoints + '" /></label>' +
       '</div>' +
-
-      '<label class="chk"><input id="s-comp" type="checkbox"' + (s.compensation ? ' checked' : '') + ' /> <span>Compensation points</span></label>' +
-      '<div class="hint">Players who play fewer matches get extra points (floor(totalPoints/2) each) to make up the difference.</div>' +
       '</div>' +
 
       '<div class="card"><h2>Ranking priority</h2>' +
@@ -116,7 +108,6 @@ PadelApp.setup = (function () {
         format: root.querySelector('#s-format').value,
         numCourts: parseInt(root.querySelector('#s-courts').value, 10),
         totalPoints: parseInt(root.querySelector('#s-wins').value, 10) || 21,
-        compensation: root.querySelector('#s-comp').checked,
         scoringPriority: s.scoringPriority.map(function (p) { return { key: p.key, dir: p.dir }; })
       };
     }
@@ -126,15 +117,10 @@ PadelApp.setup = (function () {
       var g = root.querySelector('#p-gender').value || null;
       if (!name) return;
       PadelApp.state.addPlayer(name, g);
-      var ni = document.getElementById('p-name');
-      if (ni) ni.focus();
     }
 
     root.querySelector('[data-act="addplayer"]').addEventListener('click', addPlayer);
     root.querySelector('#p-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') addPlayer(); });
-    root.querySelector('#s-courts').addEventListener('change', function () {
-      PadelApp.state.updateSettings({ numCourts: parseInt(root.querySelector('#s-courts').value, 10) || 1 });
-    });
 
     root.addEventListener('click', function (e) {
       var back = e.target.closest('[data-act="back"]');
@@ -193,7 +179,7 @@ var dirB = e.target.closest('[data-dir]');
       var active = PadelApp.state.players().filter(function (p) { return p.active; }).length;
       var mixed = settings.format.indexOf('mixed') === 0;
       var missingGender = PadelApp.state.players().some(function (p) { return !p.gender; });
-      if (active < minPlayers()) { window.alert('Add at least ' + minPlayers() + ' active players to start.'); return; }
+      if (active < 4) { window.alert('Add at least 4 active players to start.'); return; }
       if (mixed && missingGender) { window.alert('Mixed formats require a gender for every player.'); return; }
       PadelApp.state.start(settings);
     });

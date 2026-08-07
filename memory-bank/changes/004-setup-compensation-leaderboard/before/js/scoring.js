@@ -104,25 +104,13 @@ PadelApp.score = (function () {
       var r = map[p.id];
       if (r) r.diff = r.pf - r.pa;
     });
-
-    var comp = (stateRef && stateRef.settings && stateRef.settings.compensation) ? 1 : 0;
-    var perMatch = Math.floor(((stateRef && stateRef.settings && stateRef.settings.totalPoints) || 21) / 2);
-    var maxMatches = 0;
-    if (comp) {
-      Object.keys(map).forEach(function (id) {
-        if (map[id].matches > maxMatches) maxMatches = map[id].matches;
-      });
-    }
-    Object.keys(map).forEach(function (id) {
-      map[id].comp = comp ? (maxMatches - map[id].matches) * perMatch : 0;
-    });
     return map;
   }
 
   function valueForKey(row, key) {
     switch (key) {
       case 'wins': return row.wins;
-      case 'points': return row.pf + (row.comp || 0);
+      case 'points': return row.pf;
       case 'diff': return row.diff;
       case 'matches': return row.matches;
       case 'opp': return row.pa;

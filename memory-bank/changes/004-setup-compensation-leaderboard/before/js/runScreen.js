@@ -119,21 +119,6 @@ PadelApp.run = (function () {
   }
 
   /* -------- leaderboard tab -------- */
-  var PRI = {
-    wins: 'Wins', points: 'Points', diff: 'Points diff',
-    matches: 'Matches played', opp: 'Points against', losses: 'Losses'
-  };
-
-  function rankByHtml() {
-    var s = PadelApp.state.settings();
-    var parts = (s.scoringPriority || []).map(function (p) {
-      return (PRI[p.key] || p.key) + (p.dir === 'asc' ? ' (low first)' : ' (high first)');
-    });
-    if (!parts.length) return '';
-    if (s.compensation) parts.push('compensation points');
-    return '<div class="hint rankby">Ranked by: ' + parts.join(' &middot; ') + '</div>';
-  }
-
   function leaderboardTab() {
     var rows = PadelApp.score.leaderboard();
     if (!rows.length) return '<div class="muted card">No players.</div>';
@@ -144,10 +129,10 @@ PadelApp.run = (function () {
         '<td>' + r.rank + '</td>' +
         '<td class="lbname">' + esc(r.name) + gb(genderOf(r.id)) + '</td>' +
         '<td>' + r.wins + '</td><td>' + r.losses + '</td>' +
-        '<td>' + r.pf + (r.comp > 0 ? ' <span class="comp">(+' + r.comp + ')</span>' : '') + '</td><td>' + r.pa + '</td><td>' + r.diff + '</td>' +
+        '<td>' + r.pf + '</td><td>' + r.pa + '</td><td>' + r.diff + '</td>' +
         '<td>' + r.matches + '</td><td>' + st + '</td></tr>';
     }).join('');
-    return '<div class="card lb">' + rankByHtml() + '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
+    return '<div class="card lb"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
   }
 
   /* -------- players tab -------- */

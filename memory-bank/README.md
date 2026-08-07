@@ -31,3 +31,6 @@ Both folders mirror the live project layout (`index.html`, `css/style.css`, `js/
 | # | Change | Status |
 |---|--------|--------|
 | 001 | Multi-event main menu (main menu, concurrent events, event name/date/match) | Applied |
+| 002 | Total-points scoring | Applied |
+| 003 | Event-listener accumulation & priority-editor fixes | Applied |
+| 004 | Setup improvements, compensation points & leaderboard priority | Applied |

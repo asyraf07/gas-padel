@@ -44,7 +44,7 @@ js/
       date: string,            // datetime-local value, may be empty
       match: {                 // exactly the old single-event state shape
         players: [ {id, name, gender: 'M'|'F'|null, active} ],
-        settings: { format, numCourts, totalPoints,
+        settings: { format, numCourts, totalPoints, compensation: bool,
                     scoringPriority: [{key, dir}] },
         rounds: [ {roundNumber, courts:[{teamA, teamB, score|null}],
                    byes:[], played} ],
@@ -65,8 +65,10 @@ js/
 - **Concurrent events**: multiple events exist independently; each keeps its own players, format, rounds and scores. Switching between them never touches another event's data.
 - **Roster change** (add/remove/toggle active) re-runs the schedule from the first unplayed round onward; played rounds and scores stay untouched.
 - **Total-points scoring**: a court ends when the two sides' scores add up to **exactly** `settings.totalPoints` (default 21); higher side wins; ties are rejected. The old "first to / win by 2" rules were removed (legacy `winPoints` auto-migrates).
+- **Minimum players**: an event needs `numCourts × 4` active players (e.g. 2 courts → 8). The setup screen enforces this in its hint, live warning, and Start validation; the Courts select persists on change.
+- **Compensation points** (`settings.compensation`, off by default): players who play fewer matches than the most-played player get `(maxMatches − matches) × floor(totalPoints/2)` extra points. The leaderboard shows it as `pf (+N)` and the `Points` ranking key uses `pf + comp` (affects ranking).
 - **Score entry** marks the court played; when all courts in a round are done the round plays and (for Mexicano) the next round regenerates.
-- **Edge cases**: fewer than 4 active players → warn and block start; unequal gender counts handled gracefully; full state restores from localStorage on reload.
+- **Edge cases**: fewer than `numCourts × 4` active players → warn and block start; unequal gender counts handled gracefully; full state restores from localStorage on reload.
 
 ## Rendering / listener hygiene
 

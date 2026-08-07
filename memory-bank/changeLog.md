@@ -2,6 +2,27 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 004 — Setup improvements, compensation points & leaderboard priority
+
+**Applied:** yes
+
+**Summary:** (1) Minimum players now scales with courts — `numCourts × 4` instead of a hard-coded 4, applied to the hint, live warning, and Start validation; the Courts select persists on change so the warning updates live. (2) The player-name input keeps focus after adding a player. (3) New **compensation points** toggle (`settings.compensation`): players below the most-played player get `(maxMatches − matches) × floor(totalPoints/2)` extra points, shown as `pf (+N)` in the leaderboard Pts column and included in the `Points` ranking key. (4) The Leaderboard tab shows a read-only "Ranked by:" priority line (appends "compensation points" when on).
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/state.js` | `settings.compensation: false` default |
+| `js/setupScreen.js` | `minPlayers()` = courts×4; live `#s-courts` change; focus retention; `#s-comp` checkbox |
+| `js/scoring.js` | `row.comp` in `aggregates()`; `valueForKey('points')` → `pf + comp` |
+| `js/runScreen.js` | `rankByHtml()` priority line; `(+N)` in Pts column |
+| `css/style.css` | `.comp`, `.rankby` styles |
+
+**Snapshots:** `changes/004-setup-compensation-leaderboard/before/` and `after/`.
+**Details:** `changes/004-setup-compensation-leaderboard/CHANGE.md`.
+
+---
+
 ## 003 — Event-listener accumulation & priority-editor fixes
 
 **Applied:** yes

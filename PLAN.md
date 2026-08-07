@@ -59,3 +59,44 @@ Leaderboard is always recomputed from played rounds (never stored).
 - Smoke-test the pure modules (`matchmaking.js`, `scoring.js`) headlessly with `node` during development to sanity-check balance/fairness invariants.
 - Manual browser pass for the full flow: setup → play rounds → mid-game roster changes → reload restores state.
 ```
+
+---
+
+# Feature 004 — Setup improvements, compensation points & leaderboard priority
+
+## Goal
+Four UX/scoring enhancements for the setup and leaderboard screens.
+
+## Sub-features
+
+1. **Minimum players depends on court count**
+   - `minPlayers = numCourts × 4` (was a hard-coded 4).
+   - Applied to the setup screen's empty-roster hint, the active-player warning, and the Start validation.
+   - Changing the Courts select now persists via `updateSettings` so the warning updates live.
+
+2. **Keep focus in the player-name input after adding a player**
+   - After `addPlayer()`, re-focus the fresh `#p-name` node via `document.getElementById` (the render replaces the `#app` node, so the old `root` reference is detached).
+
+3. **Compensation points toggle** (`settings.compensation`, default off)
+   - Checkbox on the setup screen; "players who play fewer matches get extra points to make up the difference".
+   - Per missed match: `floor(totalPoints / 2)` (e.g. 21 → 10 per match).
+   - `comp = (maxMatchesAcrossPlayers − player.matches) × floor(totalPoints / 2)`.
+   - Leaderboard: Pts column shows `pf (+N)`; the `Points` ranking key uses `pf + comp` (affects ranking).
+
+4. **Leaderboard ranking priority display**
+   - The Leaderboard tab now shows a read-only "Ranked by: …" line built from `settings.scoringPriority`; appends "compensation points" when enabled.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/state.js` | `defaultSettings()` gains `compensation: false` |
+| `js/setupScreen.js` | `minPlayers()` helper; courts `change` handler; focus retention; `#s-comp` checkbox in `readSettings()` |
+| `js/scoring.js` | `row.comp` in `aggregates()`; `valueForKey('points')` → `pf + comp` |
+| `js/runScreen.js` | `rankByHtml()` priority line; `(+N)` in Pts column |
+| `css/style.css` | `.comp` + `.rankby` styles |
+
+## Verification
+- `node --check` on all edited JS files.
+- Headless `node` check on `scoring.js`: compensation math (gap × floor(totalPoints/2)), ranking uses `pf + comp`, toggle-off restores raw `pf` ranking.
+- Manual browser pass: 2 courts → warning requires 8; add player keeps focus; toggle compensation → `(+N)` shows and ranking shifts; leaderboard shows priority line.
+```

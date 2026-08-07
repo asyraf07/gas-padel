@@ -151,8 +151,6 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .lb th { color: var(--muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; }
 .lb td:first-child, .lb th:first-child { text-align: left; padding-left: 8px; }
 .lb .lbname { text-align: left; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
-.lb .comp { color: var(--accent); font-size: .8em; font-weight: 400; }
-.lb .rankby { margin-bottom: 8px; }
 .lb tr:nth-child(1) td { background: rgba(251, 191, 36, .08); }
 
 /* history */

@@ -4,6 +4,15 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**004 — Setup improvements, compensation points & leaderboard priority** (see `changes/004-setup-compensation-leaderboard/CHANGE.md`).
+
+- Minimum players is now `numCourts × 4` (was hard-coded 4) across the empty-roster hint, live warning, and Start validation; the Courts select persists on change.
+- Player-name input keeps focus after adding a player.
+- New `settings.compensation` toggle: per missed match players get `floor(totalPoints/2)` points; leaderboard shows `pf (+N)` and the `Points` ranking key uses `pf + comp`.
+- Leaderboard tab shows a read-only "Ranked by:" priority line.
+
+**Previous change:**
+
 **003 — Event-listener accumulation & priority-editor fixes** (see `changes/003-event-listener-fixes/CHANGE.md`).
 
 - **Root cause:** every screen bound click handlers via `root.addEventListener` on the same persistent `#app` element, and `renderAll()` only replaced `innerHTML` — so listeners stacked on every render and one click fired N times.
