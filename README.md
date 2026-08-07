@@ -9,10 +9,12 @@ A fully client-side web app for organising padel match making events. All data i
   - Mexicano re-ranks pairings from live points after every round.
 - **Matchmaking fairness**: court capacity (with fair byes), play-count balance, wait-time fairness, and partner/opponent uniqueness until combos are exhausted.
 - **Mixed constraint**: every team is one male + one female; uneven gender counts are handled gracefully.
-- **Scoring**: configurable "total points" rule — a court ends when the two sides' scores add up to exactly the target (default 21, no ties), plus a reorderable ranking priority (wins, points, points diff, matches played, …).
+- **Scoring**: configurable "total points" rule — a court ends when the two sides' scores add up to exactly the target (default 21, no ties), plus a reorderable ranking priority (wins, points, points diff, matches played, …) that's editable right from the Leaderboard tab.
 - **Live re-scheduling**: add/remove/toggle players mid-event regenerates only unplayed rounds — played rounds and their scores stay intact.
-- **Leaderboard**: recomputed on every score entry (Wins, Losses, Points, Against, Diff, Matches, current Streak).
+- **Leaderboard**: recomputed live — a score counts the moment it's saved, even mid-round (Wins, Losses, Points, Against, Diff, Matches, current Streak), with a column legend.
+- **Edit anything**: rename players, rename events and change their date, and edit saved scores (future rounds regenerate from the updated standings).
 - Round navigation with score entry per court and a history of past rounds.
+- Clean custom modals replace the browser's alert/confirm dialogs.
 - Full state restoration on refresh/reopen.
 
 ## Usage
@@ -40,7 +42,10 @@ js/
   state.js        Central state + actions
   matchmaking.js  Round generation + full-schedule builder
   scoring.js      Leaderboard statistics
+  modal.js        Custom modal popups (alert/confirm/prompt/form)
+  prioEditor.js   Shared ranking-priority editor
   setupScreen.js  Setup screen
   runScreen.js    Running screen (courts / leaderboard / players)
+  menuScreen.js   Main menu (events list)
   app.js          Bootstrap + screen switching
 ```

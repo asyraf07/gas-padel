@@ -35,3 +35,4 @@ Both folders mirror the live project layout (`index.html`, `css/style.css`, `js/
 | 003 | Event-listener accumulation & priority-editor fixes | Applied |
 | 004 | Setup improvements, compensation points & leaderboard priority | Applied |
 | 005 | Setup field persistence & scroll preservation | Applied |
+| 006 | Event editing, leaderboard polish & UX improvements | Applied |

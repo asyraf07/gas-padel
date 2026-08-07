@@ -37,7 +37,6 @@ PadelApp.menu = (function () {
         '</div>' +
         '<div class="ev-actions">' +
         '<button class="btn small" data-act="open">Open</button>' +
-        '<button class="btnghost small" data-act="edit" title="Edit event">Edit</button>' +
         '<button class="btnghost small" data-act="delete" title="Delete event">&times;</button>' +
         '</div>' +
         '</div>';
@@ -63,23 +62,10 @@ PadelApp.menu = (function () {
   function bind(root) {
     function create() {
       var name = (root.querySelector('#ev-name').value || '').trim();
-      if (!name) { PadelApp.modal.alert('Enter an event name.'); return; }
+      if (!name) { window.alert('Enter an event name.'); return; }
       var date = root.querySelector('#ev-date').value || '';
       resetRunView();
       PadelApp.state.createEvent(name, date);
-    }
-
-    function editEvent(ev) {
-      PadelApp.modal.form('Edit event',
-        '<label class="fld">Event name<input class="modal-input" id="me-name" type="text" value="' + esc(ev.name) + '" required /></label>' +
-        '<label class="fld">Date &amp; time<input class="modal-input" id="me-date" type="datetime-local" value="' + esc(ev.date || '') + '" /></label>',
-        function (overlay) {
-          var name = (overlay.querySelector('#me-name').value || '').trim();
-          var date = overlay.querySelector('#me-date').value || '';
-          if (!name) { PadelApp.modal.alert('Enter an event name.', 'Edit event'); return; }
-          PadelApp.state.renameEvent(ev.id, name);
-          PadelApp.state.setEventDate(ev.id, date);
-        });
     }
 
     function resetRunView() {
@@ -100,21 +86,12 @@ PadelApp.menu = (function () {
         PadelApp.state.openEvent(id);
         return;
       }
-      var ed = e.target.closest('[data-act="edit"]');
-      if (ed) {
-        var eid = Number(ed.closest('.event-card').getAttribute('data-id'));
-        var ev = PadelApp.state.events().filter(function (x) { return x.id === eid; })[0];
-        if (ev) editEvent(ev);
-        return;
-      }
       var del = e.target.closest('[data-act="delete"]');
       if (del) {
         var did = Number(del.closest('.event-card').getAttribute('data-id'));
-        var ev2 = PadelApp.state.events().filter(function (x) { return x.id === did; })[0];
-        if (ev2) {
-          PadelApp.modal.confirm('Delete event "' + ev2.name + '"? This removes its match data.', 'Delete event', function (ok) {
-            if (ok) PadelApp.state.removeEvent(did);
-          });
+        var ev = PadelApp.state.events().filter(function (x) { return x.id === did; })[0];
+        if (ev && window.confirm('Delete event "' + ev.name + '"? This removes its match data.')) {
+          PadelApp.state.removeEvent(did);
         }
         return;
       }

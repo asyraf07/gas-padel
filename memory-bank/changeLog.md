@@ -2,6 +2,31 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 006 — Event editing, leaderboard polish & UX improvements
+
+**Applied:** yes
+
+**Summary:** (1) The ranking-priority editor is extracted into a shared `js/prioEditor.js` used by both the Setup screen and the Leaderboard tab (edits apply immediately and re-sort the table), and the Leaderboard shows a column legend. (2) Rename/edit for players, events, dates and saved scores: pencil buttons rename players, an Edit button on each menu event card and on the Setup/Run header edits the event name + `datetime-local` date, the event date shows in both event-page headers, and a played court's score gets an Edit button that re-opens pre-filled inputs — `editScore` re-validates (no ties, totals exactly `totalPoints`) and regenerates future rounds. (3) UX: a custom modal system (`js/modal.js`) replaces every `window.alert`/`confirm`; court cards stack each team's names above its own score input; and `aggregates()`/streak now count any court with a saved score, so the leaderboard updates the moment a score is saved (not only when a round completes). Also fixed two bugs from the in-progress implementation: `modal.prompt`/`form` callbacks read a nulled `current` (crash), and `editScore` wiped partially-played rounds — it now regenerates only when the edited round is fully played.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/modal.js` (new) | Custom modal: `PadelApp.modal.alert/confirm/prompt/form`, overlay on `document.body` |
+| `js/prioEditor.js` (new) | Shared priority editor (`PadelApp.prio.html/bind`) used by Setup & Leaderboard |
+| `index.html` | Loads `js/modal.js`, `js/prioEditor.js` |
+| `js/state.js` | `renamePlayer`, `renameEvent`, `setEventDate`, `editScore` (regenerates only when round played) |
+| `js/scoring.js` | `aggregates()` + streak count scored courts regardless of `round.played` |
+| `js/runScreen.js` | Header date + edit button; priority card + legend; paired score layout; score Edit; rename pencil; modal |
+| `js/setupScreen.js` | Shared priority editor; rename pencil; header date + edit button; modal start warnings |
+| `js/menuScreen.js` | Event Edit button (name + date); modal delete/validation |
+| `css/style.css` | Modal overlay, legend, paired score layout, header date, edit buttons |
+
+**Snapshots:** `changes/006-event-editing-leaderboard-ux/before/` and `after/`.
+**Details:** `changes/006-event-editing-leaderboard-ux/CHANGE.md`.
+
+---
+
 ## 005 — Setup field persistence & scroll preservation
 
 **Applied:** yes

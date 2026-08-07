@@ -260,7 +260,7 @@ PadelApp.state = (function () {
     if (err) return err;
     court.score = [ptA, ptB];
     if (round.courts.every(function (c) { return c.score !== null; })) round.played = true;
-    if (round.played) PadelApp.match.buildUnplayed(m);
+    PadelApp.match.buildUnplayed(m);
     changed();
     return null;
   }

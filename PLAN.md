@@ -111,4 +111,49 @@ Fix for setup-screen bugs found after 004:
 - **Page jumped to the top on interaction** — removing the focused element on re-render moves focus to `<body>`, and the browser applies that focus-scroll asynchronously, overriding a synchronous restore. `renderAll()` now preserves `window.pageYOffset` on same-screen re-renders, re-focuses the equivalent element in the new DOM (`preventScroll` when supported), and re-applies the scroll restore on the next tick only if the page drifted above the captured position; it resets to top on screen switches. The add-player focus retention still scrolls to the name input (top) by design.
 
 Files: `js/setupScreen.js` (silent input persistence + full-form sync), `js/state.js` (`updateSettingsSilent`), `js/app.js` (scroll preservation). See `memory-bank/changes/005-setup-field-persist-scroll/`.
-```
+
+---
+
+# Feature 006 — Event editing, leaderboard polish & UX improvements
+
+## Goal
+Three enhancements: (1) an editable ranking-priority card and column legend on the Leaderboard tab; (2) rename/edit actions for players, events, dates and saved scores, plus showing the event date on the event page; (3) UX improvements — custom modal popups, a clearer court-score layout, and a leaderboard that updates the moment a score is saved.
+
+## Sub-feature 6.1 — Leaderboard: editable ranking priority card + column legend
+
+1. **Editable priority card on the Leaderboard tab.** Reuse the same editor as Setup (move up/down, toggle direction, add/remove keys). Changes apply immediately and re-sort the table. Extract the editor into a shared `js/prioEditor.js` used by both Setup and the Leaderboard (Setup keeps its `currentFormPatch()` persistence; the shared editor takes an `onChange` callback so nothing from 005 regresses).
+2. **Column legend.** A compact helper under/above the table explaining every header: `#` rank, `W` wins, `L` losses, `Pts` points scored (includes compensation `(+N)`), `Agst` points against, `Diff` points difference, `Played` matches played, `Streak` current win/loss streak. Keep the existing "Ranked by:" line.
+
+## Sub-feature 6.2 — Rename & edit: players, events, dates, saved scores
+
+1. **Rename a player.** A pencil button on each player row (Players tab and Setup list) opens the custom modal with the current name pre-filled → `renamePlayer(id, name)`. The leaderboard picks up the new name automatically (it reads from `players`).
+2. **Rename an event / change its date.** An Edit button on each menu event card **and** on the event page header opens a custom modal with the name field and a `datetime-local` date field → update the event's meta.
+3. **Show the event date on the event page.** Display it in the header of both Setup and Run screens, formatted the same way as the menu card (`fmtDate`).
+4. **Change a saved score.** On the Courts tab, a played court's final score gets an Edit button that returns it to the score inputs (pre-filled) with Save. Save calls a new `editScore(roundIdx, courtIdx, a, b)` with the same validation as entry (scores total exactly `totalPoints`, no ties). After editing, the leaderboard and streak recompute and **future rounds regenerate** from the updated standings via `buildUnplayed`.
+
+## Sub-feature 6.3 — UX: custom modals, court score layout, live leaderboard
+
+1. **Custom modal system** replacing every `window.alert` / `window.confirm` (menu delete, name validation, score validation, "Round complete!", Setup start warnings). A single fixed overlay appended to `document.body` (outside `#app`) so it survives re-renders; dismiss via backdrop click or Escape. API: `PadelApp.modal.alert / confirm / prompt`.
+2. **Court card score layout.** Put each team's player names directly above that team's score input (vertical pairing) instead of one horizontal `[A] : [B]` row, so it's obvious which score belongs to which team. Keep the Save button.
+3. **Live leaderboard.** `aggregates()` and the streak pass now count every court with a saved `score` even in rounds not fully played, so the leaderboard reflects a score as soon as Save is pressed — not only when the whole round completes. (`totalPointsFor` stays played-rounds-only for Mexicano seeding, unchanged.)
+
+## Files
+| File | Change |
+|------|--------|
+| `js/modal.js` (new) | Custom modal: `PadelApp.modal.alert/confirm/prompt` |
+| `js/prioEditor.js` (new) | Shared priority-editor markup + binding, used by Setup & Leaderboard |
+| `js/state.js` | `renamePlayer`, `renameEvent`, `setEventDate`, `editScore` (regenerates future rounds) |
+| `js/scoring.js` | `aggregates()` + streak count scored courts regardless of `round.played` |
+| `js/runScreen.js` | Header date + edit button; leaderboard priority card + legend; court score layout; score Edit; player rename pencil; use modal |
+| `js/setupScreen.js` | Use shared priority editor + modal; player rename pencil |
+| `js/menuScreen.js` | Event Edit button (name + date); use modal for delete/validation |
+| `css/style.css` | Modal overlay, priority card, legend, court score pairing, header date, edit buttons |
+| `index.html` | Load `js/modal.js`, `js/prioEditor.js` |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check` on all edited/new JS.
+- Headless checks: `editScore` validation + future-round regeneration; live `aggregates` includes partial rounds; rename updates leaderboard names.
+- Manual: save one court's score mid-round → leaderboard reflects it immediately; edit a played score → table and future rounds update; rename player/event/date via custom modals; delete-event confirm is the custom modal; court card shows names above each score input.
+
+> Implementation of this plan follows the memory-bank convention: create `memory-bank/changes/006-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.

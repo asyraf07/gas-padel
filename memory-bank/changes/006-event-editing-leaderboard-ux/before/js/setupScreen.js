@@ -8,6 +8,10 @@ PadelApp.setup = (function () {
     mixed_americano: 'Mixed Americano',
     mixed_mexicano: 'Mixed Mexicano'
   };
+  var PRI = {
+    wins: 'Wins', points: 'Points', diff: 'Points diff',
+    matches: 'Matches played', opp: 'Points against', losses: 'Losses'
+  };
 
   function esc(t) {
     return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
@@ -17,13 +21,6 @@ PadelApp.setup = (function () {
   function gb(g) {
     if (!g) return '';
     return g === 'F' ? '<span class="g g-f">F</span>' : '<span class="g g-m">M</span>';
-  }
-
-  function fmtDate(v) {
-    if (!v) return '';
-    var d = new Date(v);
-    if (isNaN(d.getTime())) return v;
-    return d.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
   function minPlayers() {
@@ -37,10 +34,31 @@ PadelApp.setup = (function () {
       return '<div class="ply" data-id="' + p.id + '">' +
         '<span class="gidx">' + (i + 1) + '</span>' + gb(p.gender) +
         '<span class="pname">' + esc(p.name) + '</span>' +
-        '<button class="btnghost small" data-act="renameplayer" data-id="' + p.id + '" title="Rename player">&#9998;</button>' +
         '<button class="btnghost small" data-act="remove">&times; Remove</button>' +
         '</div>';
     }).join('');
+  }
+
+  function prioEditor() {
+    var s = PadelApp.state.settings();
+    var rows = s.scoringPriority.map(function (p, i) {
+      return '<div class="prio-row">' +
+        '<span class="prio-name">' + (PRI[p.key] || p.key) + '</span>' +
+        '<span class="prio-dir">' + (p.dir === 'asc' ? 'low first' : 'high first') + '</span>' +
+        '<button class="btnghost tgl" data-i="' + i + '" data-key="' + p.key + '" data-dir="' + p.dir + '">' + (p.dir === 'asc' ? '\u2191' : '\u2193') + '</button>' +
+        '<button class="btnghost mv" data-i="' + i + '" data-d="' + (i - 1) + '"' + (i === 0 ? ' disabled' : '') + '>&#8593;</button>' +
+        '<button class="btnghost mv" data-i="' + i + '" data-d="' + (i + 1) + '"' + (i === s.scoringPriority.length - 1 ? ' disabled' : '') + '>&#8595;</button>' +
+        '<button class="btnghost del" data-i="' + i + '">&times;</button>' +
+        '</div>';
+    }).join('') +
+      '<div class="prio-add">' +
+      '<select id="prio-key">' + Object.keys(PRI).map(function (k) {
+        var used = s.scoringPriority.some(function (p) { return p.key === k; });
+        return '<option value="' + k + '"' + (used ? ' disabled' : '') + '>' + PRI[k] + '</option>';
+      }).join('') + '</select>' +
+      '<button class="btn small" data-act="addprio">Add key</button>' +
+      '</div>';
+    return rows;
   }
 
   function warnHtml() {
@@ -53,11 +71,9 @@ PadelApp.setup = (function () {
   function layout() {
     var s = PadelApp.state.settings();
     var ev = PadelApp.state.currentEvent();
-    var date = ev && ev.date ? '<span class="evdate">' + esc(fmtDate(ev.date)) + '</span>' : '';
     return '<header class="apphead"><div class="headrow">' +
       '<button class="btnghost small" data-act="back">&larr; Events</button>' +
-      '<span class="estitle">' + esc(ev ? ev.name : 'Setup') + date + '</span>' +
-      '<button class="btnghost small" data-act="editevent" title="Edit event">&#9998;</button></div></header>' +
+      '<span class="estitle">' + esc(ev ? ev.name : 'Setup') + '</span></div></header>' +
 
       '<div class="card"><h2>Players</h2>' +
       '<div class="form-row">' +
@@ -86,7 +102,7 @@ PadelApp.setup = (function () {
 
       '<div class="card"><h2>Ranking priority</h2>' +
       '<div class="hint">Top = most important. Move keys; tap \u2191/\u2193 for direction.</div>' +
-      '<div id="prio">' + PadelApp.prio.html(s.scoringPriority) + '</div>' +
+      '<div id="prio">' + prioEditor() + '</div>' +
       '</div>' +
 
       warnHtml() +
@@ -143,54 +159,62 @@ PadelApp.setup = (function () {
     root.addEventListener('click', function (e) {
       var back = e.target.closest('[data-act="back"]');
       if (back) { PadelApp.state.leaveEvent(); return; }
-      var evedit = e.target.closest('[data-act="editevent"]');
-      if (evedit) {
-        var cev = PadelApp.state.currentEvent();
-        if (cev) {
-          PadelApp.modal.form('Edit event',
-            '<label class="fld">Event name<input class="modal-input" id="se-name" type="text" value="' + esc(cev.name) + '" required /></label>' +
-            '<label class="fld">Date &amp; time<input class="modal-input" id="se-date" type="datetime-local" value="' + esc(cev.date || '') + '" /></label>',
-            function (overlay) {
-              var name = (overlay.querySelector('#se-name').value || '').trim();
-              var date = overlay.querySelector('#se-date').value || '';
-              if (!name) { PadelApp.modal.alert('Enter an event name.', 'Edit event'); return; }
-              PadelApp.state.renameEvent(cev.id, name);
-              PadelApp.state.setEventDate(cev.id, date);
-            });
-        }
-        return;
-      }
       var rem = e.target.closest('[data-act="remove"]');
       if (rem) {
         var id = Number(rem.closest('.ply').getAttribute('data-id'));
         PadelApp.state.removePlayer(id);
         return;
       }
-      var rp = e.target.closest('[data-act="renameplayer"]');
-      if (rp) {
-        var pid = Number(rp.getAttribute('data-id'));
-        var pl = PadelApp.state.players();
-        var nm = '';
-        for (var i = 0; i < pl.length; i++) if (pl[i].id === pid) nm = pl[i].name;
-        PadelApp.modal.prompt('Rename player', nm, function (value) {
-          var v = (value || '').trim();
-          if (v) PadelApp.state.renamePlayer(pid, v);
-        });
+      var addp = e.target.closest('[data-act="addprio"]');
+      if (addp) {
+        var keySel = root.querySelector('#prio-key');
+        var key = keySel.value;
+        var prio = PadelApp.state.settings().scoringPriority;
+        if (!prio.some(function (p) { return p.key === key; })) prio.push({ key: key, dir: 'desc' });
+        PadelApp.state.updateSettings(currentFormPatch());
+        return;
+      }
+var dirB = e.target.closest('[data-dir]');
+      if (dirB) return; // handled by direction listener below
+      var mv = e.target.closest('.mv');
+      if (mv && !mv.disabled) {
+        var arr = PadelApp.state.settings().scoringPriority;
+        var si = parseInt(mv.getAttribute('data-i'), 10);
+        var dn = parseInt(mv.getAttribute('data-d'), 10);
+        if (dn >= 0 && dn < arr.length) { var t = arr[si]; arr[si] = arr[dn]; arr[dn] = t; }
+        PadelApp.state.updateSettings(currentFormPatch());
+        return;
+      }
+      var del = e.target.closest('.del');
+      if (del) {
+        var di = parseInt(del.getAttribute('data-i'), 10);
+        PadelApp.state.settings().scoringPriority.splice(di, 1);
+        PadelApp.state.updateSettings(currentFormPatch());
         return;
       }
     });
 
-    PadelApp.prio.bind(root,
-      function () { return PadelApp.state.settings().scoringPriority; },
-      function () { PadelApp.state.updateSettings(currentFormPatch()); });
+    // delegate dir toggle on .t handler (separate)
+    root.addEventListener('click', function (e) {
+      var t = e.target.closest('.tgl');
+      if (!t) return;
+      var iP = parseInt(t.getAttribute('data-i'), 10);
+      var key = t.getAttribute('data-key');
+      var dir = t.getAttribute('data-dir');
+      var arr = PadelApp.state.settings().scoringPriority;
+      for (var j = 0; j < arr.length; j++) {
+        if (arr[j].key === key) { arr[j].dir = dir === 'asc' ? 'desc' : 'asc'; }
+      }
+      PadelApp.state.updateSettings(currentFormPatch());
+    });
 
     root.querySelector('[data-act="start"]').addEventListener('click', function () {
       var settings = readSettings();
       var active = PadelApp.state.players().filter(function (p) { return p.active; }).length;
       var mixed = settings.format.indexOf('mixed') === 0;
       var missingGender = PadelApp.state.players().some(function (p) { return !p.gender; });
-      if (active < minPlayers()) { PadelApp.modal.alert('Add at least ' + minPlayers() + ' active players to start.'); return; }
-      if (mixed && missingGender) { PadelApp.modal.alert('Mixed formats require a gender for every player.'); return; }
+      if (active < minPlayers()) { window.alert('Add at least ' + minPlayers() + ' active players to start.'); return; }
+      if (mixed && missingGender) { window.alert('Mixed formats require a gender for every player.'); return; }
       PadelApp.state.start(settings);
     });
   }

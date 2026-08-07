@@ -18,9 +18,11 @@ js/
   state.js            Events + per-event match state and all actions
   matchmaking.js      Pure round generation + full-schedule builder
   scoring.js          Pure leaderboard computation (recomputed from played rounds)
+  modal.js            Custom modal popups (alert/confirm/prompt/form)
+  prioEditor.js       Shared ranking-priority editor (Setup + Leaderboard)
   setupScreen.js      Screen: players, format, courts, scoring (per event)
   runScreen.js        Screen: courts, leaderboard, players, round nav, history
-  menuScreen.js       Main menu: event list, create/open/delete events
+  menuScreen.js       Main menu: event list, create/open/edit/delete events
   app.js              Bootstrap + screen switching
 ```
 
@@ -68,7 +70,11 @@ js/
 - **Minimum players**: an event needs `numCourts × 4` active players (e.g. 2 courts → 8). The setup screen enforces this in its hint, live warning, and Start validation; the Courts select persists on change.
 - **Setup field persistence**: setup controls never reset on re-render. `#s-wins` (Total points) persists on `input` via `updateSettingsSilent` (no re-render, so typing/focus is uninterrupted); Format, Courts, and Compensation persist on `change`, and priority edits call `updateSettings(currentFormPatch())` which mirrors the live DOM values of all setup fields into settings before re-rendering. `renderAll()` preserves scroll position on same-screen re-renders (re-focusing the equivalent element in the new DOM and re-applying the scroll restore on the next tick to defeat the browser's async focus-scroll jump) and resets to top on screen switches.
 - **Compensation points** (`settings.compensation`, off by default): players who play fewer matches than the most-played player get `(maxMatches − matches) × floor(totalPoints/2)` extra points. The leaderboard shows it as `pf (+N)` and the `Points` ranking key uses `pf + comp` (affects ranking).
-- **Score entry** marks the court played; when all courts in a round are done the round plays and (for Mexicano) the next round regenerates.
+- **Score entry** marks the court played; when all courts in a round are done the round plays and (for Mexicano) the next round regenerates. The leaderboard is **live**: `aggregates()` and the streak pass count any court with a saved score even in rounds not fully played (`totalPointsFor` stays played-rounds-only for Mexicano seeding).
+- **Score editing**: a played court's score has an Edit button; `editScore` re-validates (no ties, scores total exactly `totalPoints`) and regenerates future rounds from the updated standings — but only when the edited round is fully played, so partially-played rounds keep their saved scores.
+- **Custom modals** (`PadelApp.modal`) replace every `window.alert`/`confirm`; the overlay is appended to `document.body` so it survives re-renders.
+- **Ranking priority editor** is a shared module (`PadelApp.prio`) used by both Setup and the Leaderboard tab; Leaderboard edits re-sort the table immediately.
+- **Rename/edit**: pencil buttons rename players (Players tab + Setup list); Edit buttons on menu event cards and both event-page headers rename the event / change its date; the event date shows in the Setup and Run headers.
 - **Edge cases**: fewer than `numCourts × 4` active players → warn and block start; unequal gender counts handled gracefully; full state restores from localStorage on reload.
 
 ## Rendering / listener hygiene

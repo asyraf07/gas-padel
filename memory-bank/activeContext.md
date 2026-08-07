@@ -4,6 +4,16 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**006 — Event editing, leaderboard polish & UX improvements** (see `changes/006-event-editing-leaderboard-ux/CHANGE.md`).
+
+- The ranking-priority editor is a shared module (`js/prioEditor.js`, `PadelApp.prio.html/bind`) used by both Setup and the Leaderboard tab; Leaderboard edits re-sort instantly and a column legend explains every header.
+- Rename/edit: pencil buttons rename players (Players tab + Setup list); Edit buttons on menu event cards and both event-page headers rename the event / change its date via a custom modal; the event date displays in the Setup and Run headers.
+- A played court's score has an Edit button → `editScore` re-validates and regenerates future rounds from the updated standings.
+- Custom modals (`js/modal.js`) replace every `window.alert`/`confirm`; court cards stack names above each team's score input; `aggregates()`/streak count any scored court so the leaderboard updates live as soon as a score is saved.
+- Two implementation bugs fixed: `modal.prompt`/`form` callbacks no longer read a nulled `current` (they capture the overlay), and `editScore` regenerates only when the edited round is fully played (partial rounds aren't wiped).
+
+**Previous change:**
+
 **005 — Setup field persistence & scroll preservation** (see `changes/005-setup-field-persist-scroll/CHANGE.md`).
 
 - Setup fields never reset on re-render: `#s-wins` persists on `input` via new `updateSettingsSilent` (no re-render, keeps focus), and every setup-field change / priority edit persists the full live form (`currentFormPatch()`) before re-rendering — so changing courts or the ranking priority no longer reverts total points to 21 or unchecks compensation.
@@ -41,9 +51,11 @@ Current working state of the project and the latest decisions.
 | `js/state.js` | Events + per-event match state and actions |
 | `js/matchmaking.js` | Round generation (unchanged by 001) |
 | `js/scoring.js` | Leaderboard (unchanged by 001) |
-| `js/setupScreen.js` | Per-event setup; header shows event name + back |
-| `js/runScreen.js` | Per-event run; header shows event name + back |
-| `js/menuScreen.js` | Main menu: list / create / open / delete events |
+| `js/modal.js` | Custom modal popups (`alert`/`confirm`/`prompt`/`form`), added by 006 |
+| `js/prioEditor.js` | Shared ranking-priority editor, added by 006 |
+| `js/setupScreen.js` | Per-event setup; header shows event name + date + back |
+| `js/runScreen.js` | Per-event run; header shows event name + date + back |
+| `js/menuScreen.js` | Main menu: list / create / open / edit / delete events |
 | `js/app.js` | Routes menu ↔ setup ↔ run; mounts a fresh `#app` node each render |
 
 ## Next steps / open items
