@@ -3,21 +3,22 @@ var PadelApp = window.PadelApp || {};
 
 PadelApp.app = (function () {
   function renderAll() {
-    var container = document.getElementById('app');
-    var root = document.createElement('div');
-    root.id = 'app';
+    var root = document.getElementById('app');
     var ev = PadelApp.state.currentEvent();
+    var html;
     if (!ev) {
-      root.innerHTML = PadelApp.menu.layout();
+      html = PadelApp.menu.layout();
+      root.innerHTML = html;
       PadelApp.menu.bind(root);
     } else if (ev.match.started) {
-      root.innerHTML = PadelApp.run.layout();
+      html = PadelApp.run.layout();
+      root.innerHTML = html;
       PadelApp.run.bind(root);
     } else {
-      root.innerHTML = PadelApp.setup.layout();
+      html = PadelApp.setup.layout();
+      root.innerHTML = html;
       PadelApp.setup.bind(root);
     }
-    container.parentNode.replaceChild(root, container);
   }
 
   function boot() {

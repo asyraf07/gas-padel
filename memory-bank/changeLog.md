@@ -2,6 +2,44 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 003 — Event-listener accumulation & priority-editor fixes
+
+**Applied:** yes
+
+**Summary:** Fixed bugs caused by event listeners stacking on the persistent `#app` root across re-renders (priority editor adding all keys / move no-ops, round-nav jumps into negative numbers, unclosable Save alert, progressive slowdown). `renderAll()` now mounts a fresh `#app` node each render. Also fixed the priority direction-toggle selector (`.t` → `.tgl`) and leaderboard ranking for `opp`/`losses` keys.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/app.js` | `renderAll()` mounts a fresh `#app` node per render (discards old listeners) |
+| `js/setupScreen.js` | Direction-toggle handler selector `.t` → `.tgl` |
+| `js/scoring.js` | `valueForKey()` maps `opp` → points against, `losses` → losses |
+
+**Snapshots:** `changes/003-event-listener-fixes/before/` and `after/`.
+**Details:** `changes/003-event-listener-fixes/CHANGE.md`.
+
+---
+
+## 002 — Total-points scoring
+
+**Applied:** yes
+
+**Summary:** Replaced "first to N" with a **total-points** rule — a court ends when the two scores sum to exactly `totalPoints` (default 21), higher side wins, no ties. Removed the "Win by 2" option and migrated legacy `winPoints` settings.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/state.js` | `totalPoints: 21` default; legacy `winPoints`/`winByTwo` migration |
+| `js/setupScreen.js` | "Total points" field; removed "Win by 2" checkbox |
+| `js/runScreen.js` | Header label + `validate()` enforces `a + b === totalPoints`, no ties |
+
+**Snapshots:** `changes/002-total-points-scoring/before/` and `after/`.
+**Details:** `changes/002-total-points-scoring/CHANGE.md`.
+
+---
+
 ## 001 — Multi-event main menu
 
 **Applied:** yes

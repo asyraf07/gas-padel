@@ -162,7 +162,7 @@ var dirB = e.target.closest('[data-dir]');
 
     // delegate dir toggle on .t handler (separate)
     root.addEventListener('click', function (e) {
-      var t = e.target.closest('.tgl');
+      var t = e.target.closest('.t');
       if (!t) return;
       var iP = parseInt(t.getAttribute('data-i'), 10);
       var key = t.getAttribute('data-key');

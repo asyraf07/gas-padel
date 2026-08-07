@@ -113,8 +113,6 @@ PadelApp.score = (function () {
       case 'points': return row.pf;
       case 'diff': return row.diff;
       case 'matches': return row.matches;
-      case 'opp': return row.pa;
-      case 'losses': return row.losses;
       default: return row.wins;
     }
   }

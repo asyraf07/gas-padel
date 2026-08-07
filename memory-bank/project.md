@@ -64,8 +64,13 @@ js/
 
 - **Concurrent events**: multiple events exist independently; each keeps its own players, format, rounds and scores. Switching between them never touches another event's data.
 - **Roster change** (add/remove/toggle active) re-runs the schedule from the first unplayed round onward; played rounds and scores stay untouched.
+- **Total-points scoring**: a court ends when the two sides' scores add up to **exactly** `settings.totalPoints` (default 21); higher side wins; ties are rejected. The old "first to / win by 2" rules were removed (legacy `winPoints` auto-migrates).
 - **Score entry** marks the court played; when all courts in a round are done the round plays and (for Mexicano) the next round regenerates.
 - **Edge cases**: fewer than 4 active players → warn and block start; unequal gender counts handled gracefully; full state restores from localStorage on reload.
+
+## Rendering / listener hygiene
+
+`app.js` `renderAll()` mounts a **fresh `#app` div** on every state change and `replaceChild`s it into the container. Screens delegate clicks/input via `root.addEventListener`; because the node is replaced each render, old listeners are discarded and none accumulate.
 
 ## Conventions
 

@@ -4,14 +4,18 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
-**001 — Multi-event main menu** (see `changes/001-multi-event-main-menu/CHANGE.md`).
+**003 — Event-listener accumulation & priority-editor fixes** (see `changes/003-event-listener-fixes/CHANGE.md`).
 
-- Added a main menu (`js/menuScreen.js`) that lists all events.
-- Each event holds a **name**, a **time/date**, and its **match** (players, format, rounds, scores).
-- Multiple events can **run at the same time** — all persist independently and the user switches between them via the menu or the `← Events` back button on the Setup/Run screens.
-- Replaced the destructive "End event" reset with a non-destructive back-to-menu action; event deletion lives in the menu (with confirm).
+- **Root cause:** every screen bound click handlers via `root.addEventListener` on the same persistent `#app` element, and `renderAll()` only replaced `innerHTML` — so listeners stacked on every render and one click fired N times.
+- **Fix:** `renderAll()` now mounts a **fresh `#app` node** each render (`replaceChild`), discarding old listeners. Also fixed the priority direction-toggle selector (`.t` → `.tgl`) and leaderboard ranking for `opp`/`losses` keys.
 
-## Current file layout (after change 001)
+**Previous change:**
+
+**002 — Total-points scoring** (see `changes/002-total-points-scoring/CHANGE.md`).
+
+- A court ends when the two scores sum to **exactly** `totalPoints` (default 21); higher side wins, no ties; "Win by 2" removed; legacy `winPoints` settings auto-migrate.
+
+## Current file layout (after change 003)
 
 | File | Purpose |
 |------|---------|
@@ -24,7 +28,7 @@ Current working state of the project and the latest decisions.
 | `js/setupScreen.js` | Per-event setup; header shows event name + back |
 | `js/runScreen.js` | Per-event run; header shows event name + back |
 | `js/menuScreen.js` | Main menu: list / create / open / delete events |
-| `js/app.js` | Routes menu ↔ setup ↔ run |
+| `js/app.js` | Routes menu ↔ setup ↔ run; mounts a fresh `#app` node each render |
 
 ## Next steps / open items
 

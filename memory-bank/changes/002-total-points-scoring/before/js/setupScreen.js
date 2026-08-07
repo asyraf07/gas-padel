@@ -88,7 +88,8 @@ PadelApp.setup = (function () {
       }).join('') + '</select></div>' +
 
       '<div class="form-row">' +
-      '<label>Total points <input id="s-wins" type="number" min="1" max="999" value="' + s.totalPoints + '" /></label>' +
+      '<label>First to <input id="s-wins" type="number" min="1" max="999" value="' + s.winPoints + '" /></label>' +
+      '<label class="chk"><input id="s-by2" type="checkbox"' + (s.winByTwo ? ' checked' : '') + ' /> Win by 2</label>' +
       '</div>' +
       '</div>' +
 
@@ -107,7 +108,8 @@ PadelApp.setup = (function () {
       return {
         format: root.querySelector('#s-format').value,
         numCourts: parseInt(root.querySelector('#s-courts').value, 10),
-        totalPoints: parseInt(root.querySelector('#s-wins').value, 10) || 21,
+        winPoints: parseInt(root.querySelector('#s-wins').value, 10) || 15,
+        winByTwo: root.querySelector('#s-by2').checked,
         scoringPriority: s.scoringPriority.map(function (p) { return { key: p.key, dir: p.dir }; })
       };
     }
@@ -162,7 +164,7 @@ var dirB = e.target.closest('[data-dir]');
 
     // delegate dir toggle on .t handler (separate)
     root.addEventListener('click', function (e) {
-      var t = e.target.closest('.tgl');
+      var t = e.target.closest('.t');
       if (!t) return;
       var iP = parseInt(t.getAttribute('data-i'), 10);
       var key = t.getAttribute('data-key');
