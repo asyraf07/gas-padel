@@ -9,7 +9,7 @@ A fully client-side web app for organising padel match making events. All data i
   - Mexicano re-ranks pairings from live points after every round.
 - **Matchmaking fairness**: court capacity (with fair byes), play-count balance, wait-time fairness, and partner/opponent uniqueness until combos are exhausted.
 - **Mixed constraint**: every team is one male + one female; uneven gender counts are handled gracefully.
-- **Scoring**: configurable "first to X" win points with an optional win-by-2 rule, plus a reorderable ranking priority (wins, points, points diff, matches played, …).
+- **Scoring**: configurable "total points" rule — a court ends when the two sides' scores add up to exactly the target (default 21, no ties), plus a reorderable ranking priority (wins, points, points diff, matches played, …).
 - **Live re-scheduling**: add/remove/toggle players mid-event regenerates only unplayed rounds — played rounds and their scores stay intact.
 - **Leaderboard**: recomputed on every score entry (Wins, Losses, Points, Against, Diff, Matches, current Streak).
 - Round navigation with score entry per court and a history of past rounds.

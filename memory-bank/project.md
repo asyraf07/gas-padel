@@ -44,7 +44,7 @@ js/
       date: string,            // datetime-local value, may be empty
       match: {                 // exactly the old single-event state shape
         players: [ {id, name, gender: 'M'|'F'|null, active} ],
-        settings: { format, numCourts, winPoints, winByTwo,
+        settings: { format, numCourts, totalPoints,
                     scoringPriority: [{key, dir}] },
         rounds: [ {roundNumber, courts:[{teamA, teamB, score|null}],
                    byes:[], played} ],

@@ -9,8 +9,7 @@ PadelApp.state = (function () {
     return {
       format: 'americano',
       numCourts: 1,
-      winPoints: 15,
-      winByTwo: false,
+      totalPoints: 21,
       scoringPriority: [
         { key: 'wins', dir: 'desc' },
         { key: 'diff', dir: 'desc' },
@@ -49,7 +48,11 @@ PadelApp.state = (function () {
   }
 
   function normalizeMatch(m) {
-    m.settings = Object.assign(defaultSettings(), m.settings || {});
+    var s = m.settings || {};
+    if (s.totalPoints == null && typeof s.winPoints === 'number') s.totalPoints = s.winPoints;
+    delete s.winPoints;
+    delete s.winByTwo;
+    m.settings = Object.assign(defaultSettings(), s);
     m.nextId = m.nextId >= 1 ? m.nextId : (m.players.length + 1);
     if (m.rounds && m.rounds.length) {
       var playedC = 0;

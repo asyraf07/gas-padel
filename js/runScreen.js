@@ -29,7 +29,7 @@ PadelApp.run = (function () {
       '<div class="headrow">' +
       '<button class="btnghost small" data-act="menu">&larr; Events</button>' +
       '<div class="estitle">' + esc(ev ? ev.name : '') +
-      '<span class="fmt">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; first to ' + s.winPoints + (s.winByTwo ? ' by 2' : '') + '</span></div>' +
+      '<span class="fmt">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; total points ' + s.totalPoints + '</span></div>' +
       '</div>' +
       '<div class="tabs">' +
       ['courts', 'leaderboard', 'players'].map(function (t) {
@@ -235,9 +235,7 @@ PadelApp.run = (function () {
   function validate(a, b) {
     var s = PadelApp.state.settings();
     if (a === b) return 'Scores cannot be tied.';
-    var winner = a > b ? a : b;
-    if (winner < s.winPoints) return 'Winner must reach ' + s.winPoints + ' points.';
-    if (s.winByTwo && Math.abs(a - b) < 2) return 'Win by 2 required.';
+    if (a + b !== s.totalPoints) return 'Scores must total exactly ' + s.totalPoints + '.';
     return null;
   }
 

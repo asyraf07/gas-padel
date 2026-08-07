@@ -88,8 +88,7 @@ PadelApp.setup = (function () {
       }).join('') + '</select></div>' +
 
       '<div class="form-row">' +
-      '<label>First to <input id="s-wins" type="number" min="1" max="999" value="' + s.winPoints + '" /></label>' +
-      '<label class="chk"><input id="s-by2" type="checkbox"' + (s.winByTwo ? ' checked' : '') + ' /> Win by 2</label>' +
+      '<label>Total points <input id="s-wins" type="number" min="1" max="999" value="' + s.totalPoints + '" /></label>' +
       '</div>' +
       '</div>' +
 
@@ -108,8 +107,7 @@ PadelApp.setup = (function () {
       return {
         format: root.querySelector('#s-format').value,
         numCourts: parseInt(root.querySelector('#s-courts').value, 10),
-        winPoints: parseInt(root.querySelector('#s-wins').value, 10) || 15,
-        winByTwo: root.querySelector('#s-by2').checked,
+        totalPoints: parseInt(root.querySelector('#s-wins').value, 10) || 21,
         scoringPriority: s.scoringPriority.map(function (p) { return { key: p.key, dir: p.dir }; })
       };
     }
