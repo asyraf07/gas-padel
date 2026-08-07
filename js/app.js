@@ -2,12 +2,15 @@
 var PadelApp = window.PadelApp || {};
 
 PadelApp.app = (function () {
-  function currentStarted() { return PadelApp.state.started(); }
-
   function renderAll() {
     var root = document.getElementById('app');
+    var ev = PadelApp.state.currentEvent();
     var html;
-    if (currentStarted()) {
+    if (!ev) {
+      html = PadelApp.menu.layout();
+      root.innerHTML = html;
+      PadelApp.menu.bind(root);
+    } else if (ev.match.started) {
       html = PadelApp.run.layout();
       root.innerHTML = html;
       PadelApp.run.bind(root);

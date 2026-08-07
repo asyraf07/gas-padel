@@ -27,6 +27,22 @@ body {
 
 #app { max-width: 620px; margin: 0 auto; padding: 0 12px 48px; }
 
+/* events list */
+.event-list { display: flex; flex-direction: column; gap: 10px; }
+.event-card {
+  display: flex; align-items: center; gap: 10px; padding: 12px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
+}
+.ev-info { flex: 1; min-width: 0; }
+.ev-name { font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
+.ev-meta { display: flex; gap: 12px; font-size: .8rem; color: var(--muted); margin-top: 2px; flex-wrap: wrap; }
+.ev-status { display: inline-block; font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+.st-run { background: rgba(34, 197, 94, .15); color: var(--accent); }
+.st-new { background: rgba(56, 189, 248, .15); color: var(--m); }
+.st-done { background: rgba(148, 163, 184, .15); color: var(--muted); }
+.ev-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+#ev-date { width: auto; }
+
 .apphead {
   position: sticky; top: 0; z-index: 10;
   background: rgba(15, 23, 42, .96);
@@ -35,6 +51,9 @@ body {
   border-bottom: 1px solid var(--line);
   margin-bottom: 14px;
 }
+.apphead .title { font-weight: 700; font-size: 1.15rem; }
+.headrow { display: flex; align-items: center; gap: 8px; }
+.headrow .estitle { flex: 1; min-width: 0; }
 .estitle { font-weight: 700; font-size: 1.1rem; }
 .fmt { display: block; font-size: .78rem; color: var(--muted); font-weight: 400; margin-top: 2px; }
 
@@ -68,7 +87,7 @@ h2 { font-size: .95rem; margin: 0 0 10px; color: var(--accent); text-transform: 
 .btnghost:disabled { opacity: .4; cursor: default; }
 .btnghost.small { padding: 4px 8px; }
 
-input[type="text"], input[type="number"], select {
+input[type="text"], input[type="number"], input[type="datetime-local"], select {
   background: var(--panel2); color: var(--txt); border: 1px solid var(--line);
   border-radius: 10px; padding: 10px; font-size: 1rem; min-width: 0; width: 100%;
 }

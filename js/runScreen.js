@@ -24,15 +24,18 @@ PadelApp.run = (function () {
   /* -------- header + tabs -------- */
   function header() {
     var s = PadelApp.state.settings();
+    var ev = PadelApp.state.currentEvent();
     return '<header class="apphead">' +
-      '<div class="estitle">' + formatName(s.format) +
-      '<span class="fmt">' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; first to ' + s.winPoints + (s.winByTwo ? ' by 2' : '') + '</span></div>' +
+      '<div class="headrow">' +
+      '<button class="btnghost small" data-act="menu">&larr; Events</button>' +
+      '<div class="estitle">' + esc(ev ? ev.name : '') +
+      '<span class="fmt">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; first to ' + s.winPoints + (s.winByTwo ? ' by 2' : '') + '</span></div>' +
+      '</div>' +
       '<div class="tabs">' +
       ['courts', 'leaderboard', 'players'].map(function (t) {
         var lbl = { courts: 'Courts', leaderboard: 'Leaderboard', players: 'Players' }[t];
         return '<button class="tab' + (view.tab === t ? ' on' : '') + '" data-tab="' + t + '">' + lbl + '</button>';
       }).join('') + '</div>' +
-      '<button class="btnghost small end" data-act="end">End event</button>' +
       '</header>';
   }
 
@@ -194,12 +197,10 @@ PadelApp.run = (function () {
         return;
       }
 
-      var end = e.target.closest('[data-act="end"]');
-      if (end) {
-        if (window.confirm('End this event and return to setup? All progress is cleared.')) {
-          view.tab = 'courts'; view.roundIdx = null;
-          PadelApp.state.reset();
-        }
+      var menu = e.target.closest('[data-act="menu"]');
+      if (menu) {
+        view.tab = 'courts'; view.roundIdx = null;
+        PadelApp.state.leaveEvent();
         return;
       }
 

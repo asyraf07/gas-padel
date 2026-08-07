@@ -65,7 +65,10 @@ PadelApp.setup = (function () {
 
   function layout() {
     var s = PadelApp.state.settings();
-    return '<header class="apphead"><span class="title">Padel Match Maker</span></header>' +
+    var ev = PadelApp.state.currentEvent();
+    return '<header class="apphead"><div class="headrow">' +
+      '<button class="btnghost small" data-act="back">&larr; Events</button>' +
+      '<span class="estitle">' + esc(ev ? ev.name : 'Setup') + '</span></div></header>' +
 
       '<div class="card"><h2>Players</h2>' +
       '<div class="form-row">' +
@@ -122,6 +125,8 @@ PadelApp.setup = (function () {
     root.querySelector('#p-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') addPlayer(); });
 
     root.addEventListener('click', function (e) {
+      var back = e.target.closest('[data-act="back"]');
+      if (back) { PadelApp.state.leaveEvent(); return; }
       var rem = e.target.closest('[data-act="remove"]');
       if (rem) {
         var id = Number(rem.closest('.ply').getAttribute('data-id'));
