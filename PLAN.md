@@ -100,3 +100,15 @@ Four UX/scoring enhancements for the setup and leaderboard screens.
 - Headless `node` check on `scoring.js`: compensation math (gap × floor(totalPoints/2)), ranking uses `pf + comp`, toggle-off restores raw `pf` ranking.
 - Manual browser pass: 2 courts → warning requires 8; add player keeps focus; toggle compensation → `(+N)` shows and ranking shifts; leaderboard shows priority line.
 ```
+
+---
+
+# Bugfix 005 — Setup field persistence & scroll preservation
+
+Fix for setup-screen bugs found after 004:
+
+- **Setup fields reset on re-render** — the compensation checkbox had no `change` handler, and priority/courts re-renders rebuilt from stale settings (total points → 21, compensation → unchecked). Now `#s-wins` persists on `input` via a new `updateSettingsSilent` (saves without re-rendering, so typing/focus is never interrupted), and every setup-field change / priority edit persists the full live form through `currentFormPatch()` before re-rendering.
+- **Page jumped to the top on interaction** — removing the focused element on re-render moves focus to `<body>`, and the browser applies that focus-scroll asynchronously, overriding a synchronous restore. `renderAll()` now preserves `window.pageYOffset` on same-screen re-renders, re-focuses the equivalent element in the new DOM (`preventScroll` when supported), and re-applies the scroll restore on the next tick only if the page drifted above the captured position; it resets to top on screen switches. The add-player focus retention still scrolls to the name input (top) by design.
+
+Files: `js/setupScreen.js` (silent input persistence + full-form sync), `js/state.js` (`updateSettingsSilent`), `js/app.js` (scroll preservation). See `memory-bank/changes/005-setup-field-persist-scroll/`.
+```

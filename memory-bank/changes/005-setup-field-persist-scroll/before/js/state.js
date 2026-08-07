@@ -191,14 +191,6 @@ PadelApp.state = (function () {
     changed();
   }
 
-  /* like updateSettings but does NOT notify (no re-render); for typing-persistent fields */
-  function updateSettingsSilent(patch) {
-    var m = get(); if (!m) return;
-    m.settings = Object.assign(m.settings, patch || {});
-    PadelApp.store.save(app);
-    PadelApp.score.setState(m);
-  }
-
   function regenerateUnplayed() {
     var m = get(); if (!m) return;
     PadelApp.match.buildUnplayed(m);
@@ -236,7 +228,6 @@ PadelApp.state = (function () {
     addPlayer: addPlayer, removePlayer: removePlayer,
     toggleActive: toggleActive, setGender: setGender,
     start: start, regenerateUnplayed: regenerateUnplayed, updateSettings: updateSettings,
-    updateSettingsSilent: updateSettingsSilent,
     recordScore: recordScore
   };
 })();

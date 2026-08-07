@@ -2,6 +2,25 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 005 — Setup field persistence & scroll preservation
+
+**Applied:** yes
+
+**Summary:** Fixed setup-screen bugs where user input was lost on re-render. The compensation checkbox (and Format / Total points) never persisted, and priority/courts re-renders rebuilt from stale settings (total points reverting to 21, compensation unchecked). `#s-wins` now persists on `input` via a new `updateSettingsSilent` (no re-render), and every setup-field change / priority edit persists the full live form via `currentFormPatch()` before re-rendering, so nothing can revert. Also fixed the jump-to-top: `renderAll()` preserves the scroll position on same-screen re-renders, re-focuses the equivalent element in the new DOM, and re-applies the scroll restore on the next tick to defeat the browser's async focus-scroll; it resets to the top on screen switches.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/setupScreen.js` | `#s-wins` `input` → `updateSettingsSilent`; `currentFormPatch()`; `#s-format`/`#s-courts`/`#s-comp` `change` + priority handlers persist the full live form |
+| `js/state.js` | New `updateSettingsSilent(patch)` (save + setScore, no notify) |
+| `js/app.js` | `renderAll()` tracks current screen; preserves scroll on same-screen re-renders |
+
+**Snapshots:** `changes/005-setup-field-persist-scroll/before/` and `after/`.
+**Details:** `changes/005-setup-field-persist-scroll/CHANGE.md`.
+
+---
+
 ## 004 — Setup improvements, compensation points & leaderboard priority
 
 **Applied:** yes

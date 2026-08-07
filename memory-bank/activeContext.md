@@ -4,6 +4,13 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**005 — Setup field persistence & scroll preservation** (see `changes/005-setup-field-persist-scroll/CHANGE.md`).
+
+- Setup fields never reset on re-render: `#s-wins` persists on `input` via new `updateSettingsSilent` (no re-render, keeps focus), and every setup-field change / priority edit persists the full live form (`currentFormPatch()`) before re-rendering — so changing courts or the ranking priority no longer reverts total points to 21 or unchecks compensation.
+- `renderAll()` preserves scroll position on same-screen re-renders (re-focuses the equivalent element in the new DOM and re-applies the scroll restore on the next tick to beat the browser's async focus-scroll jump) and resets to top on screen switches — fixing the jump-to-top on interaction.
+
+**Previous change:**
+
 **004 — Setup improvements, compensation points & leaderboard priority** (see `changes/004-setup-compensation-leaderboard/CHANGE.md`).
 
 - Minimum players is now `numCourts × 4` (was hard-coded 4) across the empty-roster hint, live warning, and Start validation; the Courts select persists on change.

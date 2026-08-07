@@ -121,17 +121,6 @@ PadelApp.setup = (function () {
       };
     }
 
-    /* persist the live DOM values of every setup field before a re-render,
-       so no interaction can reset fields whose change event hasn't fired yet */
-    function currentFormPatch() {
-      return {
-        format: root.querySelector('#s-format').value,
-        numCourts: parseInt(root.querySelector('#s-courts').value, 10) || 1,
-        totalPoints: parseInt(root.querySelector('#s-wins').value, 10) || 21,
-        compensation: root.querySelector('#s-comp').checked
-      };
-    }
-
     function addPlayer() {
       var name = (root.querySelector('#p-name').value || '').trim();
       var g = root.querySelector('#p-gender').value || null;
@@ -143,17 +132,8 @@ PadelApp.setup = (function () {
 
     root.querySelector('[data-act="addplayer"]').addEventListener('click', addPlayer);
     root.querySelector('#p-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') addPlayer(); });
-    root.querySelector('#s-wins').addEventListener('input', function () {
-      PadelApp.state.updateSettingsSilent({ totalPoints: parseInt(root.querySelector('#s-wins').value, 10) || 21 });
-    });
-    root.querySelector('#s-format').addEventListener('change', function () {
-      PadelApp.state.updateSettings(currentFormPatch());
-    });
     root.querySelector('#s-courts').addEventListener('change', function () {
-      PadelApp.state.updateSettings(currentFormPatch());
-    });
-    root.querySelector('#s-comp').addEventListener('change', function () {
-      PadelApp.state.updateSettings(currentFormPatch());
+      PadelApp.state.updateSettings({ numCourts: parseInt(root.querySelector('#s-courts').value, 10) || 1 });
     });
 
     root.addEventListener('click', function (e) {
@@ -171,7 +151,7 @@ PadelApp.setup = (function () {
         var key = keySel.value;
         var prio = PadelApp.state.settings().scoringPriority;
         if (!prio.some(function (p) { return p.key === key; })) prio.push({ key: key, dir: 'desc' });
-        PadelApp.state.updateSettings(currentFormPatch());
+        PadelApp.state.updateSettings({});
         return;
       }
 var dirB = e.target.closest('[data-dir]');
@@ -182,14 +162,14 @@ var dirB = e.target.closest('[data-dir]');
         var si = parseInt(mv.getAttribute('data-i'), 10);
         var dn = parseInt(mv.getAttribute('data-d'), 10);
         if (dn >= 0 && dn < arr.length) { var t = arr[si]; arr[si] = arr[dn]; arr[dn] = t; }
-        PadelApp.state.updateSettings(currentFormPatch());
+        PadelApp.state.updateSettings({});
         return;
       }
       var del = e.target.closest('.del');
       if (del) {
         var di = parseInt(del.getAttribute('data-i'), 10);
         PadelApp.state.settings().scoringPriority.splice(di, 1);
-        PadelApp.state.updateSettings(currentFormPatch());
+        PadelApp.state.updateSettings({});
         return;
       }
     });
@@ -205,7 +185,7 @@ var dirB = e.target.closest('[data-dir]');
       for (var j = 0; j < arr.length; j++) {
         if (arr[j].key === key) { arr[j].dir = dir === 'asc' ? 'desc' : 'asc'; }
       }
-      PadelApp.state.updateSettings(currentFormPatch());
+      PadelApp.state.updateSettings({});
     });
 
     root.querySelector('[data-act="start"]').addEventListener('click', function () {
