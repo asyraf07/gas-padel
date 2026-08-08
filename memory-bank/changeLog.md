@@ -2,6 +2,26 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 007 — Leaderboard polish: collapsible priority editor, table-first layout & overflow fix
+
+**Applied:** yes
+
+**Summary:** Polish of the Leaderboard tab. (1) The leaderboard table (with its "Ranked by:" line and column legend) is now the first element of the tab; the ranking-priority editor moved below it. (2) The `#prio` editor is wrapped in a `<details class="prio-panel">` ("Ranking priority") so it's collapsed by default, but editing still applies immediately and re-sorts the table (the shared `PadelApp.prio.bind` callback flow is unchanged). (3) The `↑/↓` direction toggle + "high first"/"low first" text in `prioEditor.js` is replaced by a thumb-sized segmented **High/Low** control (active direction highlighted), used on both Setup and Leaderboard. (4) Overflow fix: the `.lb` table is wrapped in a `.lb-scroll` `overflow-x:auto` container with `min-width: 560px` so the 9 columns scroll horizontally on phones instead of crushing, and `.lbname` long names truncate with ellipsis (`<span class="n">` inside the cell, `max-width` + `overflow-wrap:anywhere` fallback).
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/runScreen.js` | `leaderboardTab()` reordered (table first); `#prio` into `<details class="prio-panel">`; `.lbname` name in `<span class="n">`; table in `.lb-scroll` |
+| `js/prioEditor.js` | `.tgl` button + `.prio-dir` text → segmented High/Low control; `[data-act="dir"]` sets `dir` |
+| `js/setupScreen.js` | Setup ranking-priority hint wording → "set High/Low order" |
+| `css/style.css` | `.lb-scroll` + `min-width`, `.lbname` truncation, `.seg`/`.seg-btn`, `details.prio-panel`; removed `.prio-dir` |
+
+**Snapshots:** `changes/007-leaderboard-polish-overflow/before/` and `after/`.
+**Details:** `changes/007-leaderboard-polish-overflow/CHANGE.md`.
+
+---
+
 ## 006 — Event editing, leaderboard polish & UX improvements
 
 **Applied:** yes

@@ -121,17 +121,8 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 /* priority editor */
 .prio-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .prio-name { flex: 1; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
-.seg-btn {
-  border: none; background: var(--panel2); color: var(--muted);
-  padding: 9px 12px; font-size: .85rem; font-weight: 600; cursor: pointer;
-  min-width: 56px;
-}
-.seg-btn + .seg-btn { border-left: 1px solid var(--line); }
-.seg-btn.on { background: var(--accent-dk); color: #fff; }
+.prio-dir { color: var(--muted); font-size: .8rem; width: 64px; }
 .prio-add { display: flex; gap: 8px; margin-top: 10px; }
-details.prio-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; margin-top: 12px; }
-details.prio-panel summary { cursor: pointer; font-weight: 600; color: var(--muted); }
 
 /* round nav */
 .roundnav { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 12px; gap: 8px; }
@@ -158,13 +149,11 @@ details.prio-panel summary { cursor: pointer; font-weight: 600; color: var(--mut
 .muted { color: var(--muted); }
 
 /* leaderboard */
-.lb-scroll { overflow-x: auto; }
-.lb-scroll table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .85rem; }
+.lb table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .lb th, .lb td { padding: 8px 4px; text-align: center; border-bottom: 1px solid var(--line); }
 .lb th { color: var(--muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; }
 .lb td:first-child, .lb th:first-child { text-align: left; padding-left: 8px; }
-.lb .lbname { text-align: left; font-weight: 600; display: flex; gap: 6px; align-items: center; max-width: 130px; overflow-wrap: anywhere; }
-.lb .lbname .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.lb .lbname { text-align: left; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
 .lb .comp { color: var(--accent); font-size: .8em; font-weight: 400; }
 .lb .rankby { margin-bottom: 8px; }
 .lb tr:nth-child(1) td { background: rgba(251, 191, 36, .08); }

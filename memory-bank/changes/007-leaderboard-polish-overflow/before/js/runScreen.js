@@ -190,18 +190,17 @@ PadelApp.run = (function () {
       var st = r.streak > 0 ? 'W' + r.streak : r.streak < 0 ? 'L' + (-r.streak) : '—';
       return '<tr>' +
         '<td>' + r.rank + '</td>' +
-        '<td class="lbname"><span class="n">' + esc(r.name) + '</span>' + gb(genderOf(r.id)) + '</td>' +
+        '<td class="lbname">' + esc(r.name) + gb(genderOf(r.id)) + '</td>' +
         '<td>' + r.wins + '</td><td>' + r.losses + '</td>' +
         '<td>' + r.pf + (r.comp > 0 ? ' <span class="comp">(+' + r.comp + ')</span>' : '') + '</td><td>' + r.pa + '</td><td>' + r.diff + '</td>' +
         '<td>' + r.matches + '</td><td>' + st + '</td></tr>';
     }).join('');
-    var prioPanel = '<details class="prio-panel"><summary>Ranking priority</summary>' +
-      '<div class="hint">Top = most important. Move keys; set High/Low order.</div>' +
-      '<div id="prio">' + PadelApp.prio.html(s.scoringPriority) + '</div></details>';
-    return '<div class="card lb">' + rankByHtml() +
-      '<div class="lb-scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
-      legendHtml() + '</div>' +
-      prioPanel;
+    var prioCard = '<div class="card"><h2>Ranking priority</h2>' +
+      '<div class="hint">Top = most important. Move keys; tap \u2191/\u2193 for direction.</div>' +
+      '<div id="prio">' + PadelApp.prio.html(s.scoringPriority) + '</div></div>';
+    return prioCard + '<div class="card lb">' + rankByHtml() +
+      '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
+      legendHtml() + '</div>';
   }
 
   /* -------- players tab -------- */

@@ -18,10 +18,8 @@ PadelApp.prio = (function () {
     var rows = (priority || []).map(function (p, i) {
       return '<div class="prio-row">' +
         '<span class="prio-name">' + (PRI[p.key] || p.key) + '</span>' +
-        '<span class="seg" role="group" aria-label="Sort order">' +
-        '<button class="seg-btn' + (p.dir === 'desc' ? ' on' : '') + '" data-act="dir" data-key="' + p.key + '" data-dir="desc"' + (p.dir === 'desc' ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>High</button>' +
-        '<button class="seg-btn' + (p.dir === 'asc' ? ' on' : '') + '" data-act="dir" data-key="' + p.key + '" data-dir="asc"' + (p.dir === 'asc' ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>Low</button>' +
-        '</span>' +
+        '<span class="prio-dir">' + (p.dir === 'asc' ? 'low first' : 'high first') + '</span>' +
+        '<button class="btnghost tgl" data-i="' + i + '" data-key="' + p.key + '" data-dir="' + p.dir + '">' + (p.dir === 'asc' ? '\u2191' : '\u2193') + '</button>' +
         '<button class="btnghost mv" data-i="' + i + '" data-d="' + (i - 1) + '"' + (i === 0 ? ' disabled' : '') + '>&#8593;</button>' +
         '<button class="btnghost mv" data-i="' + i + '" data-d="' + (i + 1) + '"' + (i === priority.length - 1 ? ' disabled' : '') + '>&#8595;</button>' +
         '<button class="btnghost del" data-i="' + i + '">&times;</button>' +
@@ -69,13 +67,13 @@ PadelApp.prio = (function () {
     });
 
     root.addEventListener('click', function (e) {
-      var t = e.target.closest('[data-act="dir"]');
+      var t = e.target.closest('.tgl');
       if (!t) return;
       var key = t.getAttribute('data-key');
       var dir = t.getAttribute('data-dir');
       var arr = getPriority();
       for (var j = 0; j < arr.length; j++) {
-        if (arr[j].key === key) { arr[j].dir = dir; }
+        if (arr[j].key === key) { arr[j].dir = dir === 'asc' ? 'desc' : 'asc'; }
       }
       if (onChange) onChange();
     });

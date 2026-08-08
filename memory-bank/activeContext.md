@@ -4,6 +4,15 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**007 — Leaderboard polish: collapsible priority editor, table-first layout & overflow fix** (see `changes/007-leaderboard-polish-overflow/CHANGE.md`).
+
+- The Leaderboard tab now shows the table first (with "Ranked by:" + column legend); the ranking-priority editor is collapsed behind a `<details class="prio-panel">` ("Ranking priority") yet still applies edits immediately.
+- The direction toggle is a thumb-sized segmented **High/Low** control (`.seg`/`.seg-btn`) in `prioEditor.js`, shared by Setup and Leaderboard.
+- Overflow fix: the `.lb` table sits in an `.lb-scroll` `overflow-x:auto` container (`min-width: 560px`) so it scrolls horizontally on phones; long names truncate via ellipsis (`<span class="n">` + `.lbname` `max-width`).
+- Setup screen is unchanged except for the priority hint wording.
+
+**Previous change:**
+
 **006 — Event editing, leaderboard polish & UX improvements** (see `changes/006-event-editing-leaderboard-ux/CHANGE.md`).
 
 - The ranking-priority editor is a shared module (`js/prioEditor.js`, `PadelApp.prio.html/bind`) used by both Setup and the Leaderboard tab; Leaderboard edits re-sort instantly and a column legend explains every header.

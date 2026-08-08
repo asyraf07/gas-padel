@@ -85,7 +85,7 @@ PadelApp.setup = (function () {
       '</div>' +
 
       '<div class="card"><h2>Ranking priority</h2>' +
-      '<div class="hint">Top = most important. Move keys; set High/Low order.</div>' +
+      '<div class="hint">Top = most important. Move keys; tap \u2191/\u2193 for direction.</div>' +
       '<div id="prio">' + PadelApp.prio.html(s.scoringPriority) + '</div>' +
       '</div>' +
 
