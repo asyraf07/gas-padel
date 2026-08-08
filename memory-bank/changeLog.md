@@ -2,6 +2,26 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 009 — Player management: removal confirm, round-page substitution & regeneration toggle
+
+**Applied:** yes
+
+**Summary:** (1) Removing a player now requires a confirm modal (Setup list + Players tab); played rounds keep showing removed players as "(removed)". (2) Unplayed, unscored court cards get a per-slot picker over the active roster (plus "+ Add player…") that swaps that slot's id via new `state.swapPlayer`; with `autoRegenerate` ON the rest of the schedule rebalances via `buildUnplayed` and the manual swap is re-applied (regeneration is skipped while any unplayed round holds saved scores, so partial rounds aren't wiped), with OFF only that court is updated. (3) New `settings.autoRegenerate` (default true) checkbox on the Players tab — when OFF, roster edits stop regenerating and a manual "Regenerate rounds" button appears on the Courts tab. (4) `addPlayer`/`renamePlayer` reject case-insensitive duplicates (trimmed) and return error strings the UI surfaces via the modal.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/state.js` | `settings.autoRegenerate`; `nameTaken`; error-returning add/rename; guarded `buildUnplayed`; `swapPlayer` + partial-round safety |
+| `js/runScreen.js` | Slot pickers in court cards; regen button; auto-regenerate checkbox; remove confirm; add/rename error handling |
+| `js/setupScreen.js` | Remove confirm modal; duplicate-name validation |
+| `css/style.css` | `.team.pick`, `.slotpicker`, `.regen-row`, `.chk.auto` |
+
+**Snapshots:** `changes/009-player-mgmt-substitution-regen-toggle/before/` and `after/`.
+**Details:** `changes/009-player-mgmt-substitution-regen-toggle/CHANGE.md`.
+
+---
+
 ## 008 — Faster score entry & finish-event flow
 
 **Applied:** yes

@@ -94,27 +94,6 @@ PadelApp.run = (function () {
     }).join('') + '</div>';
   }
 
-  function slotSel(globalSlot, curId, ci) {
-    var ps = PadelApp.state.players();
-    var active = ps.filter(function (p) { return p.active; });
-    var opts = active.map(function (p) {
-      return '<option value="' + p.id + '"' + (p.id === curId ? ' selected' : '') + '>' + esc(p.name) + '</option>';
-    });
-    var hasCur = active.some(function (p) { return p.id === curId; });
-    if (!hasCur) {
-      var cur = null;
-      for (var i = 0; i < ps.length; i++) if (ps[i].id === curId) cur = ps[i];
-      opts.unshift('<option value="' + curId + '" selected>' + esc(cur ? cur.name : '(removed)') + '</option>');
-    }
-    opts.push('<option value="__add__">+ Add player&hellip;</option>');
-    return '<select class="slotpicker" data-court="' + ci + '" data-slot="' + globalSlot + '">' + opts.join('') + '</select>';
-  }
-
-  function teamSlotsHtml(c, ci, slotBase, showPickers) {
-    if (!showPickers) return '<span class="team">' + teamHtml(c) + '</span>';
-    return '<span class="team pick">' + slotSel(slotBase, c[0], ci) + slotSel(slotBase + 1, c[1], ci) + '</span>';
-  }
-
   function courtCards(r) {
     if (!r || !r.courts.length) {
       return '<div class="muted card">Not enough active players for a full court.</div>';
@@ -123,7 +102,6 @@ PadelApp.run = (function () {
     var locked = PadelApp.state.finished();
     return r.courts.map(function (c, i) {
       var editing = view.editing && view.editing.round === view.roundIdx && view.editing.court === i;
-      var showPickers = !locked && !r.played && c.score === null;
       var body;
       if (c.score !== null && !editing) {
         body = '<div class="cscore">' +
@@ -138,12 +116,12 @@ PadelApp.run = (function () {
         var va = (editing && c.score) ? c.score[0] : '';
         var vb = (editing && c.score) ? c.score[1] : '';
         body = '<div class="cscore">' +
-          '<div class="cteam"><div class="teamrow">' + teamSlotsHtml(c.teamA, i, 0, showPickers) + '</div>' +
+          '<div class="cteam"><div class="teamrow"><span class="team">' + teamHtml(c.teamA) + '</span></div>' +
           '<div class="tscore"><input type="number" id="sc-a-' + i + '" min="0" max="' + total + '" placeholder="0" inputmode="numeric" value="' + va + '"' + (locked ? ' disabled' : '') + ' /></div>' +
           (locked ? '' : chipsHtml(total, i, 'a')) +
           '</div>' +
           '<div class="vsline">vs</div>' +
-          '<div class="cteam"><div class="teamrow">' + teamSlotsHtml(c.teamB, i, 2, showPickers) + '</div>' +
+          '<div class="cteam"><div class="teamrow"><span class="team">' + teamHtml(c.teamB) + '</span></div>' +
           '<div class="tscore"><input type="number" id="sc-b-' + i + '" min="0" max="' + total + '" placeholder="0" inputmode="numeric" value="' + vb + '"' + (locked ? ' disabled' : '') + ' /></div>' +
           (locked ? '' : chipsHtml(total, i, 'b')) +
           '</div>' +
@@ -170,10 +148,7 @@ PadelApp.run = (function () {
     var r = s.rounds[view.roundIdx];
     var byes = r && r.byes && r.byes.length
       ? '<div class="byes">Bye: ' + r.byes.map(function (id) { return esc(pName(id)); }).join(', ') + '</div>' : '';
-    var regen = (!s.settings.autoRegenerate && !s.finished)
-      ? '<div class="regen-row"><button class="btn" data-act="regen">Regenerate rounds</button>' +
-        '<div class="hint">Auto-regeneration is off; rebuild upcoming rounds on demand.</div></div>' : '';
-    return roundNav(s) + courtCards(r) + byes + regen + historyHtml(s) + endOfRound(s);
+    return roundNav(s) + courtCards(r) + byes + historyHtml(s) + endOfRound(s);
   }
 
   function endOfRound(s) {
@@ -266,7 +241,6 @@ PadelApp.run = (function () {
   /* -------- players tab -------- */
   function playersTab() {
     var finished = PadelApp.state.finished();
-    var s = PadelApp.state.settings();
     var ps = PadelApp.state.players();
     var rows = ps.map(function (p) {
       return '<div class="ply" data-id="' + p.id + '">' +
@@ -286,7 +260,6 @@ PadelApp.run = (function () {
       '<select id="run-gender"' + (finished ? ' disabled' : '') + '><option value="">Gender</option><option value="M">M</option><option value="F">F</option></select>' +
       '<button class="btn" data-act="addplayer"' + (finished ? ' disabled' : '') + '>Add</button>' +
       '</div>' +
-      '<label class="chk auto"><input type="checkbox" data-act="autoregen"' + (s.autoRegenerate ? ' checked' : '') + (finished ? ' disabled' : '') + ' /> <span>Auto-regenerate unplayed rounds when players change</span></label>' +
       '<div class="player-list">' + (rows || '<p class="muted">No players.</p>') + '</div>' +
       '<div class="hint">' + (finished ? 'Event finished — players are locked.' : 'Changing players regenerates all upcoming rounds. Played rounds are kept.') + '</div>' +
       '</div>';
@@ -389,19 +362,11 @@ PadelApp.run = (function () {
         var name = (root.querySelector('#run-name').value || '').trim();
         var g = root.querySelector('#run-gender').value || null;
         if (!name) return;
-        var err = PadelApp.state.addPlayer(name, g);
-        if (err) { PadelApp.modal.alert(err); return; }
+        PadelApp.state.addPlayer(name, g);
         return;
       }
       var rem = e.target.closest('[data-act="removeplayer"]');
-      if (rem) {
-        var rid = Number(rem.getAttribute('data-id'));
-        var pobj = pnameObj(rid);
-        PadelApp.modal.confirm('Remove ' + (pobj ? pobj.name : 'this player') + '? Unplayed rounds will be regenerated without them; played rounds keep their scores.', 'Remove player', function (ok) {
-          if (ok) PadelApp.state.removePlayer(rid);
-        });
-        return;
-      }
+      if (rem) { PadelApp.state.removePlayer(Number(rem.getAttribute('data-id'))); return; }
       var tog = e.target.closest('[data-act="toggle"]');
       if (tog) { PadelApp.state.toggleActive(Number(tog.getAttribute('data-id'))); return; }
       var rp = e.target.closest('[data-act="renameplayer"]');
@@ -410,44 +375,15 @@ PadelApp.run = (function () {
         var p = pnameObj(pid);
         PadelApp.modal.prompt('Rename player', p ? p.name : '', function (value) {
           var v = (value || '').trim();
-          if (!v) return;
-          var err2 = PadelApp.state.renamePlayer(pid, v);
-          if (err2) PadelApp.modal.alert(err2);
+          if (v) PadelApp.state.renamePlayer(pid, v);
         });
         return;
       }
-      var regen = e.target.closest('[data-act="regen"]');
-      if (regen) { PadelApp.state.regenerateUnplayed(); return; }
     });
 
     root.addEventListener('change', function (e) {
       var gsel = e.target.closest('.gsel');
       if (gsel) { PadelApp.state.setGender(Number(gsel.getAttribute('data-id')), gsel.value || null); return; }
-      var ar = e.target.closest('[data-act="autoregen"]');
-      if (ar) { PadelApp.state.updateSettings({ autoRegenerate: ar.checked }); return; }
-      var sp = e.target.closest('.slotpicker');
-      if (sp) {
-        var sci = parseInt(sp.getAttribute('data-court'), 10);
-        var slot = parseInt(sp.getAttribute('data-slot'), 10);
-        var val = sp.value;
-        if (val === '__add__') {
-          PadelApp.modal.prompt('Add player', '', function (value) {
-            var nm = (value || '').trim();
-            if (!nm) return;
-            var err = PadelApp.state.addPlayer(nm, null);
-            if (err) { PadelApp.modal.alert(err); return; }
-            var ps = PadelApp.state.players();
-            var newId = ps.length ? ps[ps.length - 1].id : null;
-            if (newId == null) return;
-            var err2 = PadelApp.state.swapPlayer(view.roundIdx, sci, slot, newId);
-            if (err2) PadelApp.modal.alert(err2);
-          });
-          return;
-        }
-        var err3 = PadelApp.state.swapPlayer(view.roundIdx, sci, slot, parseInt(val, 10));
-        if (err3) PadelApp.modal.alert(err3);
-        return;
-      }
     });
 
     root.addEventListener('input', function (e) {
@@ -469,8 +405,7 @@ PadelApp.run = (function () {
     if (ni) ni.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         var g2 = root.querySelector('#run-gender').value || null;
-        var err = PadelApp.state.addPlayer((ni.value || '').trim(), g2);
-        if (err) PadelApp.modal.alert(err);
+        PadelApp.state.addPlayer((ni.value || '').trim(), g2);
       }
     });
 

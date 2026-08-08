@@ -4,6 +4,15 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**009 — Player management: removal confirm, round-page substitution & regeneration toggle** (see `changes/009-player-mgmt-substitution-regen-toggle/CHANGE.md`).
+
+- Removing a player now requires a confirm modal (Setup list + Players tab); played rounds keep showing removed players as "(removed)".
+- Unplayed, unscored court cards get a per-slot picker over the active roster (plus "+ Add player…") that swaps that slot via new `state.swapPlayer`. With `autoRegenerate` ON the rest of the schedule rebalances via `buildUnplayed` (regeneration is skipped while any unplayed round holds saved scores, so partial rounds aren't wiped) and the manual swap is re-applied; with OFF only that court is updated.
+- New `settings.autoRegenerate` (default true) checkbox on the Players tab — when OFF, roster edits stop regenerating and a manual "Regenerate rounds" button appears on the Courts tab.
+- `addPlayer`/`renamePlayer` reject case-insensitive duplicates (trimmed) and return error strings surfaced via the custom modal.
+
+**Previous change:**
+
 **008 — Faster score entry & finish-event flow** (see `changes/008-faster-score-entry-finish-flow/CHANGE.md`).
 
 - Quick score entry: preset score chips (11/12/15/18/21) per court side; tapping a chip or typing a side derives the opponent as `totalPoints − score`, so ties/over-totals are impossible; validation reduces to `0 ≤ score ≤ totalPoints`. Saving uses the existing `recordScore`/`editScore` flow.

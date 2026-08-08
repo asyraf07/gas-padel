@@ -11,7 +11,6 @@ PadelApp.state = (function () {
       numCourts: 1,
       totalPoints: 21,
       compensation: true,
-      autoRegenerate: true,
       scoringPriority: [
         { key: 'points', dir: 'desc' },
         { key: 'wins', dir: 'desc' },
@@ -160,43 +159,25 @@ PadelApp.state = (function () {
   }
 
   /* -------- player management -------- */
-  function nameTaken(name) {
-    var m = get(); if (!m) return false;
-    var lower = String(name || '').trim().toLowerCase();
-    return m.players.some(function (p) { return String(p.name).toLowerCase() === lower; });
-  }
-
   function addPlayer(name, gender) {
-    var m = get(); if (!m || m.finished) return null;
-    var n = String(name || '').trim();
-    if (!n) return 'Enter a player name.';
-    if (nameTaken(n)) return 'That name is already in use.';
-    m.players.push({ id: m.nextId++, name: n, gender: gender || null, active: true });
-    if (m.started && m.settings.autoRegenerate) PadelApp.match.buildUnplayed(m);
+    var m = get(); if (!m || m.finished) return;
+    m.players.push({ id: m.nextId++, name: name, gender: gender || null, active: true });
+    if (m.started) PadelApp.match.buildUnplayed(m);
     changed();
-    return null;
   }
 
   function renamePlayer(id, name) {
-    var m = get(); if (!m || m.finished) return null;
-    var n = String(name || '').trim();
-    if (!n) return 'Enter a player name.';
+    var m = get(); if (!m || m.finished) return;
     for (var i = 0; i < m.players.length; i++) {
-      if (m.players[i].id === id) {
-        if (m.players.some(function (p) { return p.id !== id && String(p.name).toLowerCase() === n.toLowerCase(); })) {
-          return 'That name is already in use.';
-        }
-        m.players[i].name = n;
-      }
+      if (m.players[i].id === id) m.players[i].name = name;
     }
     changed();
-    return null;
   }
 
   function removePlayer(id) {
     var m = get(); if (!m || m.finished) return;
     m.players = m.players.filter(function (p) { return p.id !== id; });
-    if (m.started && m.settings.autoRegenerate) PadelApp.match.buildUnplayed(m);
+    if (m.started) PadelApp.match.buildUnplayed(m);
     changed();
   }
 
@@ -205,7 +186,7 @@ PadelApp.state = (function () {
     for (var i = 0; i < m.players.length; i++) {
       if (m.players[i].id === id) m.players[i].active = !m.players[i].active;
     }
-    if (m.started && m.settings.autoRegenerate) PadelApp.match.buildUnplayed(m);
+    if (m.started) PadelApp.match.buildUnplayed(m);
     changed();
   }
 
@@ -214,7 +195,7 @@ PadelApp.state = (function () {
     for (var i = 0; i < m.players.length; i++) {
       if (m.players[i].id === id) m.players[i].gender = gender || null;
     }
-    if (m.started && m.settings.autoRegenerate) PadelApp.match.buildUnplayed(m);
+    if (m.started) PadelApp.match.buildUnplayed(m);
     changed();
   }
 
@@ -247,50 +228,6 @@ PadelApp.state = (function () {
     var m = get(); if (!m || m.finished) return;
     PadelApp.match.buildUnplayed(m);
     changed();
-  }
-
-  /* swap the player in one slot of an unplayed, unscored court */
-  function hasPartialRound(m) {
-    return (m.rounds || []).some(function (r) {
-      return !r.played && (r.courts || []).some(function (c) { return c.score !== null; });
-    });
-  }
-
-  function applySlotSwap(court, slotIdx, newPlayerId) {
-    if (slotIdx < 2) court.teamA[slotIdx] = newPlayerId;
-    else court.teamB[slotIdx - 2] = newPlayerId;
-  }
-
-  function swapPlayer(roundIdx, courtIdx, slotIdx, newPlayerId) {
-    var m = get(); if (!m || m.finished) return 'This event is finished.';
-    var round = m.rounds[roundIdx];
-    if (!round || round.played) return 'Only unplayed rounds can be edited.';
-    var court = round.courts[courtIdx];
-    if (!court || court.score !== null) return 'Only unscored courts can be edited.';
-    var onCourt = court.teamA.concat(court.teamB);
-    if (onCourt.indexOf(newPlayerId) !== -1) return 'That player is already on this court.';
-    var np = null;
-    for (var i = 0; i < m.players.length; i++) if (m.players[i].id === newPlayerId) np = m.players[i];
-    if (!np || !np.active) return 'That player is not active.';
-    if (slotIdx < 0 || slotIdx > 3) return null;
-
-    applySlotSwap(court, slotIdx, newPlayerId);
-
-    /* auto-regeneration rebalances the rest of the schedule via buildUnplayed;
-       skip when any unplayed round holds saved scores, so those aren't wiped.
-       Re-apply the manual swap afterwards so the current court keeps the choice. */
-    if (m.settings.autoRegenerate && !hasPartialRound(m)) {
-      PadelApp.match.buildUnplayed(m);
-      var r2 = m.rounds[roundIdx];
-      var c2 = r2 && !r2.played ? r2.courts[courtIdx] : null;
-      if (c2 && c2.score === null) {
-        if (c2.teamA.concat(c2.teamB).indexOf(newPlayerId) === -1) {
-          applySlotSwap(c2, slotIdx, newPlayerId);
-        }
-      }
-    }
-    changed();
-    return null;
   }
 
   /* -------- finish event -------- */
@@ -362,7 +299,6 @@ PadelApp.state = (function () {
     toggleActive: toggleActive, setGender: setGender,
     start: start, regenerateUnplayed: regenerateUnplayed, updateSettings: updateSettings,
     updateSettingsSilent: updateSettingsSilent,
-    swapPlayer: swapPlayer,
     finishEvent: finishEvent, unfinishEvent: unfinishEvent,
     recordScore: recordScore, editScore: editScore
   };

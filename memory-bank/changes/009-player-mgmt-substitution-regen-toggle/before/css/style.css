@@ -173,13 +173,6 @@ input[disabled], select[disabled], button[disabled] { opacity: .5; }
 .warn { background: var(--warn-bg); border: 1px solid var(--warn-line); color: #fbbf24; border-radius: 10px; padding: 10px; margin: 10px 0; text-align: center; }
 .muted { color: var(--muted); }
 
-/* slot pickers (change player on unplayed courts) */
-.team.pick { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.slotpicker { width: auto; padding: 7px 8px; font-size: .9rem; border-radius: 8px; }
-.regen-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 12px 0; }
-.regen-row .hint { margin: 0; text-align: center; }
-.chk.auto { margin-top: 10px; }
-
 /* leaderboard */
 .summary { border-color: var(--accent); text-align: center; }
 .summary .sname { font-size: 1.2rem; font-weight: 800; }

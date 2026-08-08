@@ -120,8 +120,7 @@ PadelApp.setup = (function () {
       var name = (root.querySelector('#p-name').value || '').trim();
       var g = root.querySelector('#p-gender').value || null;
       if (!name) return;
-      var err = PadelApp.state.addPlayer(name, g);
-      if (err) { PadelApp.modal.alert(err); return; }
+      PadelApp.state.addPlayer(name, g);
       var ni = document.getElementById('p-name');
       if (ni) ni.focus();
     }
@@ -164,12 +163,7 @@ PadelApp.setup = (function () {
       var rem = e.target.closest('[data-act="remove"]');
       if (rem) {
         var id = Number(rem.closest('.ply').getAttribute('data-id'));
-        var pl2 = PadelApp.state.players();
-        var nm2 = '';
-        for (var i2 = 0; i2 < pl2.length; i2++) if (pl2[i2].id === id) nm2 = pl2[i2].name;
-        PadelApp.modal.confirm('Remove ' + nm2 + '? Played rounds keep their scores.', 'Remove player', function (ok) {
-          if (ok) PadelApp.state.removePlayer(id);
-        });
+        PadelApp.state.removePlayer(id);
         return;
       }
       var rp = e.target.closest('[data-act="renameplayer"]');
@@ -180,9 +174,7 @@ PadelApp.setup = (function () {
         for (var i = 0; i < pl.length; i++) if (pl[i].id === pid) nm = pl[i].name;
         PadelApp.modal.prompt('Rename player', nm, function (value) {
           var v = (value || '').trim();
-          if (!v) return;
-          var err = PadelApp.state.renamePlayer(pid, v);
-          if (err) PadelApp.modal.alert(err);
+          if (v) PadelApp.state.renamePlayer(pid, v);
         });
         return;
       }
