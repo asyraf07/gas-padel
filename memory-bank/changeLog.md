@@ -2,6 +2,26 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 008 — Faster score entry & finish-event flow
+
+**Applied:** yes
+
+**Summary:** (1) Quick score entry: each court side shows preset score chips (11/12/15/18/21, filtered to ≤ totalPoints); tapping a chip or typing derives the opponent side as `totalPoints − score`, so ties/over-totals are impossible and validation reduces to `0 ≤ score ≤ totalPoints`. Saving uses the existing `recordScore`/`editScore` flow — round completion is unchanged. (2) Finish event: a "Finish" button (run header) confirms via the custom modal and sets `match.finished = true`. When finished the event is locked — score entry/edit and roster changes (add/remove/toggle/rename/gender) are blocked at the state level and disabled in the UI; the header shows a "Finished" badge and court cards get a "locked" tag; the Leaderboard shows a final summary banner (event name/date/format + winner = rank 1) that Feature 011's share image will feed; the menu shows Finished from `match.finished` in addition to the all-rounds-played check. "Undo finish" reopens the event.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/state.js` | `finished` flag + migration; `finishEvent()`/`unfinishEvent()`/`finished()`; guards on roster + score actions |
+| `js/runScreen.js` | Score chips + auto-derive; Finish/Undo button + badge; locked court/players rendering; summary banner; range validation |
+| `js/menuScreen.js` | Finished status from `match.finished` |
+| `css/style.css` | Chips, finish badge, locked-tag, summary banner, disabled-opacity |
+
+**Snapshots:** `changes/008-faster-score-entry-finish-flow/before/` and `after/`.
+**Details:** `changes/008-faster-score-entry-finish-flow/CHANGE.md`.
+
+---
+
 ## 007 — Leaderboard polish: collapsible priority editor, table-first layout & overflow fix
 
 **Applied:** yes

@@ -31,17 +31,14 @@ PadelApp.run = (function () {
   function header() {
     var s = PadelApp.state.settings();
     var ev = PadelApp.state.currentEvent();
-    var finished = PadelApp.state.finished();
     var date = ev && ev.date ? '<span class="evdate">' + esc(fmtDate(ev.date)) + '</span>' : '';
     return '<header class="apphead">' +
       '<div class="headrow">' +
       '<button class="btnghost small" data-act="menu">&larr; Events</button>' +
       '<div class="estitle">' + esc(ev ? ev.name : '') +
-      (finished ? ' <span class="finished-badge">Finished</span>' : '') +
       '<span class="fmt">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; total points ' + s.totalPoints + '</span>' +
       date + '</div>' +
       '<button class="btnghost small" data-act="editevent" title="Edit event">&#9998;</button>' +
-      '<button class="btnghost small" data-act="' + (finished ? 'unfinish' : 'finish') + '" title="' + (finished ? 'Reopen event for editing' : 'Finish event') + '">' + (finished ? 'Undo' : 'Finish') + '</button>' +
       '</div>' +
       '<div class="tabs">' +
       ['courts', 'leaderboard', 'players'].map(function (t) {
@@ -84,22 +81,10 @@ PadelApp.run = (function () {
       '</div>';
   }
 
-  var CHIPS = [11, 12, 15, 18, 21];
-
-  function chipsHtml(total, ci, side) {
-    var cs = CHIPS.filter(function (n) { return n <= total; });
-    if (!cs.length) return '';
-    return '<div class="chips">' + cs.map(function (n) {
-      return '<button type="button" class="chip" data-court="' + ci + '" data-side="' + side + '" data-val="' + n + '">' + n + '</button>';
-    }).join('') + '</div>';
-  }
-
   function courtCards(r) {
     if (!r || !r.courts.length) {
       return '<div class="muted card">Not enough active players for a full court.</div>';
     }
-    var total = PadelApp.state.settings().totalPoints;
-    var locked = PadelApp.state.finished();
     return r.courts.map(function (c, i) {
       var editing = view.editing && view.editing.round === view.roundIdx && view.editing.court === i;
       var body;
@@ -111,28 +96,23 @@ PadelApp.run = (function () {
           '<div class="cteam"><div class="teamrow"><span class="team">' + teamHtml(c.teamB) + '</span></div>' +
           '<div class="tscore final">' + c.score[1] + '</div></div>' +
           '</div>' +
-          (locked ? '' : '<div class="score-actions"><button class="btnghost small" data-act="editscore" data-court="' + i + '">Edit</button></div>');
+          '<div class="score-actions"><button class="btnghost small" data-act="editscore" data-court="' + i + '">Edit</button></div>';
       } else {
         var va = (editing && c.score) ? c.score[0] : '';
         var vb = (editing && c.score) ? c.score[1] : '';
         body = '<div class="cscore">' +
           '<div class="cteam"><div class="teamrow"><span class="team">' + teamHtml(c.teamA) + '</span></div>' +
-          '<div class="tscore"><input type="number" id="sc-a-' + i + '" min="0" max="' + total + '" placeholder="0" inputmode="numeric" value="' + va + '"' + (locked ? ' disabled' : '') + ' /></div>' +
-          (locked ? '' : chipsHtml(total, i, 'a')) +
-          '</div>' +
+          '<div class="tscore"><input type="number" id="sc-a-' + i + '" min="0" placeholder="0" inputmode="numeric" value="' + va + '" /></div></div>' +
           '<div class="vsline">vs</div>' +
           '<div class="cteam"><div class="teamrow"><span class="team">' + teamHtml(c.teamB) + '</span></div>' +
-          '<div class="tscore"><input type="number" id="sc-b-' + i + '" min="0" max="' + total + '" placeholder="0" inputmode="numeric" value="' + vb + '"' + (locked ? ' disabled' : '') + ' /></div>' +
-          (locked ? '' : chipsHtml(total, i, 'b')) +
-          '</div>' +
+          '<div class="tscore"><input type="number" id="sc-b-' + i + '" min="0" placeholder="0" inputmode="numeric" value="' + vb + '" /></div></div>' +
           '</div>' +
           '<div class="score-actions">' +
-          (editing && !locked ? '<button class="btnghost small" data-act="canceledit">Cancel</button>' : '') +
-          (!locked ? '<button class="btn small save" data-court="' + i + '">Save</button>' : '') +
-          '</div>';
+          (editing ? '<button class="btnghost small" data-act="canceledit">Cancel</button>' : '') +
+          '<button class="btn small save" data-court="' + i + '">Save</button></div>';
       }
       return '<div class="court card">' +
-        '<div class="ctitle">Court ' + (i + 1) + (locked ? ' <span class="locked-tag">locked</span>' : '') + '</div>' + body + '</div>';
+        '<div class="ctitle">Court ' + (i + 1) + '</div>' + body + '</div>';
     }).join('');
   }
 
@@ -201,20 +181,6 @@ PadelApp.run = (function () {
       '</ul></details>';
   }
 
-  function summaryHtml() {
-    if (!PadelApp.state.finished()) return '';
-    var ev = PadelApp.state.currentEvent();
-    var s = PadelApp.state.settings();
-    var rows = PadelApp.score.leaderboard();
-    var winner = rows.length ? rows[0] : null;
-    return '<div class="card summary">' +
-      '<div class="sname">' + esc(ev ? ev.name : '') + '</div>' +
-      '<div class="smeta">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') +
-      (ev && ev.date ? ' &middot; ' + esc(fmtDate(ev.date)) : '') + '</div>' +
-      (winner ? '<div class="swinner">Winner: ' + esc(winner.name) + '</div>' : '') +
-      '</div>';
-  }
-
   function leaderboardTab() {
     var s = PadelApp.state.settings();
     var rows = PadelApp.score.leaderboard();
@@ -232,7 +198,7 @@ PadelApp.run = (function () {
     var prioPanel = '<details class="prio-panel"><summary>Ranking priority</summary>' +
       '<div class="hint">Top = most important. Move keys; set High/Low order.</div>' +
       '<div id="prio">' + PadelApp.prio.html(s.scoringPriority) + '</div></details>';
-    return summaryHtml() + '<div class="card lb">' + rankByHtml() +
+    return '<div class="card lb">' + rankByHtml() +
       '<div class="lb-scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
       legendHtml() + '</div>' +
       prioPanel;
@@ -240,28 +206,27 @@ PadelApp.run = (function () {
 
   /* -------- players tab -------- */
   function playersTab() {
-    var finished = PadelApp.state.finished();
     var ps = PadelApp.state.players();
     var rows = ps.map(function (p) {
       return '<div class="ply" data-id="' + p.id + '">' +
         gb(p.gender) +
         '<span class="pname' + (p.active ? '' : ' inactive') + '">' + esc(p.name) + '</span>' +
-        '<button class="btnghost small" data-act="renameplayer" data-id="' + p.id + '" title="Rename player"' + (finished ? ' disabled' : '') + '>&#9998;</button>' +
-        '<select class="gsel" data-id="' + p.id + '"' + (finished ? ' disabled' : '') + '>' +
+        '<button class="btnghost small" data-act="renameplayer" data-id="' + p.id + '" title="Rename player">&#9998;</button>' +
+        '<select class="gsel" data-id="' + p.id + '">' +
         '<option value="">—</option><option value="M"' + (p.gender === 'M' ? ' selected' : '') + '>M</option>' +
         '<option value="F"' + (p.gender === 'F' ? ' selected' : '') + '>F</option></select>' +
-        '<label class="chk onoff"><input type="checkbox" data-act="toggle" data-id="' + p.id + '"' + (p.active ? ' checked' : '') + (finished ? ' disabled' : '') + ' /> <span>' + (p.active ? 'on' : 'off') + '</span></label>' +
-        '<button class="btnghost small" data-act="removeplayer" data-id="' + p.id + '"' + (finished ? ' disabled' : '') + '>Remove</button>' +
+        '<label class="chk onoff"><input type="checkbox" data-act="toggle" data-id="' + p.id + '"' + (p.active ? ' checked' : '') + ' /> <span>' + (p.active ? 'on' : 'off') + '</span></label>' +
+        '<button class="btnghost small" data-act="removeplayer" data-id="' + p.id + '">Remove</button>' +
         '</div>';
     }).join('');
     return '<div class="card"><h2>Players</h2>' +
       '<div class="form-row">' +
-      '<input id="run-name" type="text" placeholder="Add player" autocomplete="off"' + (finished ? ' disabled' : '') + ' />' +
-      '<select id="run-gender"' + (finished ? ' disabled' : '') + '><option value="">Gender</option><option value="M">M</option><option value="F">F</option></select>' +
-      '<button class="btn" data-act="addplayer"' + (finished ? ' disabled' : '') + '>Add</button>' +
+      '<input id="run-name" type="text" placeholder="Add player" autocomplete="off" />' +
+      '<select id="run-gender"><option value="">Gender</option><option value="M">M</option><option value="F">F</option></select>' +
+      '<button class="btn" data-act="addplayer">Add</button>' +
       '</div>' +
       '<div class="player-list">' + (rows || '<p class="muted">No players.</p>') + '</div>' +
-      '<div class="hint">' + (finished ? 'Event finished — players are locked.' : 'Changing players regenerates all upcoming rounds. Played rounds are kept.') + '</div>' +
+      '<div class="hint">Changing players regenerates all upcoming rounds. Played rounds are kept.</div>' +
       '</div>';
   }
 
@@ -297,36 +262,6 @@ PadelApp.run = (function () {
       }
       var ce = e.target.closest('[data-act="canceledit"]');
       if (ce) { view.editing = null; PadelApp.app.renderAll(); return; }
-
-      var chip = e.target.closest('.chip');
-      if (chip) {
-        var cci = parseInt(chip.getAttribute('data-court'), 10);
-        var css = chip.getAttribute('data-side');
-        var cv = parseInt(chip.getAttribute('data-val'), 10);
-        var tp = PadelApp.state.settings().totalPoints;
-        var iA = root.querySelector('#sc-a-' + cci);
-        var iB = root.querySelector('#sc-b-' + cci);
-        if (iA && iB) {
-          if (css === 'a') { iA.value = cv; iB.value = tp - cv; }
-          else { iB.value = cv; iA.value = tp - cv; }
-        }
-        return;
-      }
-
-      var fin = e.target.closest('[data-act="finish"]');
-      if (fin) {
-        PadelApp.modal.confirm('Finish this event? Score entry and player changes will be locked, and the leaderboard will show a final summary.', 'Finish event', function (ok) {
-          if (ok) { view.editing = null; PadelApp.state.finishEvent(); }
-        });
-        return;
-      }
-      var unfin = e.target.closest('[data-act="unfinish"]');
-      if (unfin) {
-        PadelApp.modal.confirm('Reopen this event? Score entry and player changes will be allowed again.', 'Undo finish', function (ok) {
-          if (ok) PadelApp.state.unfinishEvent();
-        });
-        return;
-      }
 
       var save = e.target.closest('.save');
       if (save) {
@@ -386,21 +321,6 @@ PadelApp.run = (function () {
       if (gsel) { PadelApp.state.setGender(Number(gsel.getAttribute('data-id')), gsel.value || null); return; }
     });
 
-    root.addEventListener('input', function (e) {
-      var inp = e.target.closest('.tscore input');
-      if (!inp) return;
-      var m = /^sc-(a|b)-(\d+)$/.exec(inp.id);
-      if (!m) return;
-      var side = m[1];
-      var ci = parseInt(m[2], 10);
-      var v = parseInt(inp.value, 10);
-      var tp = PadelApp.state.settings().totalPoints;
-      if (!isNaN(v) && v >= 0 && v <= tp) {
-        var oth = root.querySelector('#sc-' + (side === 'a' ? 'b' : 'a') + '-' + ci);
-        if (oth && oth !== document.activeElement) oth.value = tp - v;
-      }
-    });
-
     var ni = root.querySelector('#run-name');
     if (ni) ni.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
@@ -418,8 +338,6 @@ PadelApp.run = (function () {
 
   function validate(a, b) {
     var s = PadelApp.state.settings();
-    if (isNaN(a) || isNaN(b)) return 'Enter both scores.';
-    if (a < 0 || a > s.totalPoints || b < 0 || b > s.totalPoints) return 'Scores must be between 0 and ' + s.totalPoints + '.';
     if (a === b) return 'Scores cannot be tied.';
     if (a + b !== s.totalPoints) return 'Scores must total exactly ' + s.totalPoints + '.';
     return null;

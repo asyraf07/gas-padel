@@ -17,7 +17,6 @@ PadelApp.menu = (function () {
 
   function statusOf(ev) {
     if (!ev.match.started) return { label: 'Not started', cls: 'st-new' };
-    if (ev.match.finished) return { label: 'Finished', cls: 'st-done' };
     var has = (ev.match.rounds || []).length > 0;
     var done = has && ev.match.rounds.every(function (r) { return r.played; });
     return done ? { label: 'Finished', cls: 'st-done' } : { label: 'Running', cls: 'st-run' };

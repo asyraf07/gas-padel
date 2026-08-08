@@ -13,6 +13,8 @@ A fully client-side web app for organising padel match making events. All data i
 - **Live re-scheduling**: add/remove/toggle players mid-event regenerates only unplayed rounds — played rounds and their scores stay intact.
 - **Leaderboard**: recomputed live — a score counts the moment it's saved, even mid-round (Wins, Losses, Points, Against, Diff, Matches, current Streak), with a column legend; on narrow phones the table scrolls horizontally and long names are truncated.
 - **Edit anything**: rename players, rename events and change their date, and edit saved scores (future rounds regenerate from the updated standings).
+- **Quick score entry**: preset score chips (11/12/15/18/21) per court side — tapping a chip or typing auto-derives the opponent score, so ties/over-totals are impossible.
+- **Finish event**: lock an event when it's done (score/roster edits blocked, header "Finished" badge), see a final summary banner with the winner, and undo the finish if needed.
 - Round navigation with score entry per court and a history of past rounds.
 - Clean custom modals replace the browser's alert/confirm dialogs.
 - Full state restoration on refresh/reopen.

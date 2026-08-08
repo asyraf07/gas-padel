@@ -4,6 +4,13 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**008 — Faster score entry & finish-event flow** (see `changes/008-faster-score-entry-finish-flow/CHANGE.md`).
+
+- Quick score entry: preset score chips (11/12/15/18/21) per court side; tapping a chip or typing a side derives the opponent as `totalPoints − score`, so ties/over-totals are impossible; validation reduces to `0 ≤ score ≤ totalPoints`. Saving uses the existing `recordScore`/`editScore` flow.
+- Finish event: "Finish" button (run header) → custom-modal confirm → `match.finished = true`. When finished, score entry/edit and roster changes are blocked at the state level and disabled in the UI, the header shows a "Finished" badge, court cards show a "locked" tag, the Leaderboard shows a final summary banner (event name/date/format + winner = rank 1, feeding Feature 011), and the menu shows Finished from `match.finished`. "Undo finish" reopens the event.
+
+**Previous change:**
+
 **007 — Leaderboard polish: collapsible priority editor, table-first layout & overflow fix** (see `changes/007-leaderboard-polish-overflow/CHANGE.md`).
 
 - The Leaderboard tab now shows the table first (with "Ranked by:" + column legend); the ranking-priority editor is collapsed behind a `<details class="prio-panel">` ("Ranking priority") yet still applies edits immediately.

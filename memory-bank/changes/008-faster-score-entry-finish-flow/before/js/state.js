@@ -27,8 +27,7 @@ PadelApp.state = (function () {
       rounds: [],
       currentIndex: 0,
       nextId: 1,
-      started: false,
-      finished: false
+      started: false
     };
   }
 
@@ -56,7 +55,6 @@ PadelApp.state = (function () {
     delete s.winByTwo;
     m.settings = Object.assign(defaultSettings(), s);
     m.nextId = m.nextId >= 1 ? m.nextId : (m.players.length + 1);
-    m.finished = !!m.finished;
     if (m.rounds && m.rounds.length) {
       var playedC = 0;
       m.rounds.forEach(function (r) { if (r.played) playedC++; });
@@ -112,7 +110,6 @@ PadelApp.state = (function () {
   function settings() { var m = get(); return m ? m.settings : defaultSettings(); }
   function players() { var m = get(); return m ? m.players : []; }
   function started() { var m = get(); return m ? m.started : false; }
-  function finished() { var m = get(); return m ? !!m.finished : false; }
 
   function subscribe(fn) { subscribers.push(fn); }
 
@@ -160,14 +157,14 @@ PadelApp.state = (function () {
 
   /* -------- player management -------- */
   function addPlayer(name, gender) {
-    var m = get(); if (!m || m.finished) return;
+    var m = get(); if (!m) return;
     m.players.push({ id: m.nextId++, name: name, gender: gender || null, active: true });
     if (m.started) PadelApp.match.buildUnplayed(m);
     changed();
   }
 
   function renamePlayer(id, name) {
-    var m = get(); if (!m || m.finished) return;
+    var m = get(); if (!m) return;
     for (var i = 0; i < m.players.length; i++) {
       if (m.players[i].id === id) m.players[i].name = name;
     }
@@ -175,14 +172,14 @@ PadelApp.state = (function () {
   }
 
   function removePlayer(id) {
-    var m = get(); if (!m || m.finished) return;
+    var m = get(); if (!m) return;
     m.players = m.players.filter(function (p) { return p.id !== id; });
     if (m.started) PadelApp.match.buildUnplayed(m);
     changed();
   }
 
   function toggleActive(id) {
-    var m = get(); if (!m || m.finished) return;
+    var m = get(); if (!m) return;
     for (var i = 0; i < m.players.length; i++) {
       if (m.players[i].id === id) m.players[i].active = !m.players[i].active;
     }
@@ -191,7 +188,7 @@ PadelApp.state = (function () {
   }
 
   function setGender(id, gender) {
-    var m = get(); if (!m || m.finished) return;
+    var m = get(); if (!m) return;
     for (var i = 0; i < m.players.length; i++) {
       if (m.players[i].id === id) m.players[i].gender = gender || null;
     }
@@ -225,27 +222,14 @@ PadelApp.state = (function () {
   }
 
   function regenerateUnplayed() {
-    var m = get(); if (!m || m.finished) return;
+    var m = get(); if (!m) return;
     PadelApp.match.buildUnplayed(m);
-    changed();
-  }
-
-  /* -------- finish event -------- */
-  function finishEvent() {
-    var m = get(); if (!m) return;
-    m.finished = true;
-    changed();
-  }
-
-  function unfinishEvent() {
-    var m = get(); if (!m) return;
-    m.finished = false;
     changed();
   }
 
   /* -------- scoring -------- */
   function recordScore(roundIdx, courtIdx, ptA, ptB) {
-    var m = get(); if (!m || m.finished) return false;
+    var m = get(); if (!m) return false;
     var round = m.rounds[roundIdx];
     if (!round || round.played) return false;
     var court = round.courts[courtIdx];
@@ -268,7 +252,7 @@ PadelApp.state = (function () {
 
   /* change an already-saved score; re-validates and regenerates future rounds */
   function editScore(roundIdx, courtIdx, ptA, ptB) {
-    var m = get(); if (!m || m.finished) return 'This event is finished.';
+    var m = get(); if (!m) return null;
     var round = m.rounds[roundIdx];
     var court = round && round.courts[courtIdx];
     if (!round || !court || court.score === null) return null;
@@ -290,7 +274,6 @@ PadelApp.state = (function () {
 
   return {
     load: load, get: get, settings: settings, players: players, started: started,
-    finished: finished,
     subscribe: subscribe,
     currentEvent: currentEvent, currentEventId: currentEventId, events: events,
     createEvent: createEvent, openEvent: openEvent, leaveEvent: leaveEvent, removeEvent: removeEvent,
@@ -299,7 +282,6 @@ PadelApp.state = (function () {
     toggleActive: toggleActive, setGender: setGender,
     start: start, regenerateUnplayed: regenerateUnplayed, updateSettings: updateSettings,
     updateSettingsSilent: updateSettingsSilent,
-    finishEvent: finishEvent, unfinishEvent: unfinishEvent,
     recordScore: recordScore, editScore: editScore
   };
 })();
