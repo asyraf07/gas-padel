@@ -17,10 +17,8 @@ PadelApp.run = (function () {
     for (var i = 0; i < ps.length; i++) if (ps[i].id === id) return ps[i].name;
     return '(removed)';
   }
-  function label(s) {
-    var mt = s.matchType === 'mexicano' ? 'Mexicano' : 'Americano';
-    var pa = s.pairing === 'mixed' ? 'Mixed' : s.pairing === 'fixed' ? 'Fixed' : 'Normal';
-    return mt + (pa === 'Normal' ? '' : ' &middot; ' + pa);
+  function formatName(f) {
+    return { americano: 'Americano', mexicano: 'Mexicano', mixed_americano: 'Mixed Americano', mixed_mexicano: 'Mixed Mexicano' }[f] || f;
   }
   function fmtDate(v) {
     if (!v) return '';
@@ -40,7 +38,7 @@ PadelApp.run = (function () {
       '<button class="btnghost small" data-act="menu">&larr; Events</button>' +
       '<div class="estitle">' + esc(ev ? ev.name : '') +
       (finished ? ' <span class="finished-badge">Finished</span>' : '') +
-      '<span class="fmt">' + label(s) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; total points ' + s.totalPoints + '</span>' +
+      '<span class="fmt">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + ' &middot; total points ' + s.totalPoints + '</span>' +
       date + '</div>' +
       '<button class="btnghost small" data-act="editevent" title="Edit event">&#9998;</button>' +
       '<button class="btnghost small" data-act="' + (finished ? 'unfinish' : 'finish') + '" title="' + (finished ? 'Reopen event for editing' : 'Finish event') + '">' + (finished ? 'Undo' : 'Finish') + '</button>' +
@@ -114,8 +112,7 @@ PadelApp.run = (function () {
 
   function teamSlotsHtml(c, ci, slotBase, showPickers) {
     if (!showPickers) return '<span class="team">' + teamHtml(c) + '</span>';
-    var sels = c.map(function (id, idx) { return slotSel(slotBase + idx, id, ci); }).join('');
-    return '<span class="team pick">' + sels + '</span>';
+    return '<span class="team pick">' + slotSel(slotBase, c[0], ci) + slotSel(slotBase + 1, c[1], ci) + '</span>';
   }
 
   function courtCards(r) {
@@ -187,16 +184,12 @@ PadelApp.run = (function () {
     return '';
   }
 
-  function teamNames(ids) {
-    return (ids || []).map(function (id) { return esc(pName(id)); }).join('/');
-  }
-
   function historyHtml(s) {
     var played = s.rounds.filter(function (r) { return r.played; });
     if (!played.length) return '';
     var inner = played.map(function (r) {
       var courts = (r.courts || []).map(function (c) {
-        return '<div class="hcourt">' + teamNames(c.teamA) + ' <b>' + c.score[0] + '–' + c.score[1] + '</b> ' + teamNames(c.teamB) + '</div>';
+        return '<div class="hcourt">' + esc(pName(c.teamA[0])) + '/' + esc(pName(c.teamA[1])) + ' <b>' + c.score[0] + '–' + c.score[1] + '</b> ' + esc(pName(c.teamB[0])) + '/' + esc(pName(c.teamB[1])) + '</div>';
       }).join('');
       return '<div class="hround"><span class="hlabel">Round ' + r.roundNumber + '</span>' + courts + '</div>';
     }).join('');
@@ -241,7 +234,7 @@ PadelApp.run = (function () {
     var winner = rows.length ? rows[0] : null;
     return '<div class="card summary">' +
       '<div class="sname">' + esc(ev ? ev.name : '') + '</div>' +
-      '<div class="smeta">' + label(s) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') +
+      '<div class="smeta">' + formatName(s.format) + ' &middot; ' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') +
       (ev && ev.date ? ' &middot; ' + esc(fmtDate(ev.date)) : '') + '</div>' +
       (winner ? '<div class="swinner">Winner: ' + esc(winner.name) + '</div>' : '') +
       '</div>';
@@ -274,27 +267,23 @@ PadelApp.run = (function () {
   function playersTab() {
     var finished = PadelApp.state.finished();
     var s = PadelApp.state.settings();
-    var fixed = s.pairing === 'fixed';
-    var mixed = s.pairing === 'mixed';
     var ps = PadelApp.state.players();
     var rows = ps.map(function (p) {
       return '<div class="ply" data-id="' + p.id + '">' +
         gb(p.gender) +
-        '<span class="pname' + (p.active ? '' : ' inactive') + '">' + esc(p.name) + (mixed && !p.gender ? ' <span class="badge">missing gender</span>' : '') + '</span>' +
+        '<span class="pname' + (p.active ? '' : ' inactive') + '">' + esc(p.name) + '</span>' +
         '<button class="btnghost small" data-act="renameplayer" data-id="' + p.id + '" title="Rename player"' + (finished ? ' disabled' : '') + '>&#9998;</button>' +
-        (fixed ? '' : '<select class="gsel" data-id="' + p.id + '"' + (finished ? ' disabled' : '') + '>' +
-          '<option value="">—</option><option value="M"' + (p.gender === 'M' ? ' selected' : '') + '>M</option>' +
-          '<option value="F"' + (p.gender === 'F' ? ' selected' : '') + '>F</option></select>') +
+        '<select class="gsel" data-id="' + p.id + '"' + (finished ? ' disabled' : '') + '>' +
+        '<option value="">—</option><option value="M"' + (p.gender === 'M' ? ' selected' : '') + '>M</option>' +
+        '<option value="F"' + (p.gender === 'F' ? ' selected' : '') + '>F</option></select>' +
         '<label class="chk onoff"><input type="checkbox" data-act="toggle" data-id="' + p.id + '"' + (p.active ? ' checked' : '') + (finished ? ' disabled' : '') + ' /> <span>' + (p.active ? 'on' : 'off') + '</span></label>' +
         '<button class="btnghost small" data-act="removeplayer" data-id="' + p.id + '"' + (finished ? ' disabled' : '') + '>Remove</button>' +
         '</div>';
     }).join('');
-    var genderSel = fixed ? '' :
-      '<select id="run-gender"' + (finished ? ' disabled' : '') + '><option value="">' + (mixed ? 'Gender *' : 'Gender') + '</option><option value="M">M</option><option value="F">F</option></select>';
-    return '<div class="card"><h2>' + (fixed ? 'Teams' : 'Players') + '</h2>' +
+    return '<div class="card"><h2>Players</h2>' +
       '<div class="form-row">' +
-      '<input id="run-name" type="text" placeholder="' + (fixed ? 'Add team' : 'Add player') + '" autocomplete="off"' + (finished ? ' disabled' : '') + ' />' +
-      genderSel +
+      '<input id="run-name" type="text" placeholder="Add player" autocomplete="off"' + (finished ? ' disabled' : '') + ' />' +
+      '<select id="run-gender"' + (finished ? ' disabled' : '') + '><option value="">Gender</option><option value="M">M</option><option value="F">F</option></select>' +
       '<button class="btn" data-act="addplayer"' + (finished ? ' disabled' : '') + '>Add</button>' +
       '</div>' +
       '<label class="chk auto"><input type="checkbox" data-act="autoregen"' + (s.autoRegenerate ? ' checked' : '') + (finished ? ' disabled' : '') + ' /> <span>Auto-regenerate unplayed rounds when players change</span></label>' +
@@ -398,10 +387,8 @@ PadelApp.run = (function () {
       var addp = e.target.closest('[data-act="addplayer"]');
       if (addp) {
         var name = (root.querySelector('#run-name').value || '').trim();
-        var gEl = root.querySelector('#run-gender');
-        var g = gEl ? (gEl.value || null) : null;
+        var g = root.querySelector('#run-gender').value || null;
         if (!name) return;
-        if (PadelApp.state.settings().pairing === 'mixed' && !g) { PadelApp.modal.alert('Mixed pairing requires a gender.'); return; }
         var err = PadelApp.state.addPlayer(name, g);
         if (err) { PadelApp.modal.alert(err); return; }
         return;
@@ -444,33 +431,17 @@ PadelApp.run = (function () {
         var slot = parseInt(sp.getAttribute('data-slot'), 10);
         var val = sp.value;
         if (val === '__add__') {
-          var mixed = PadelApp.state.settings().pairing === 'mixed';
-          var addDone = function (nm, g) {
+          PadelApp.modal.prompt('Add player', '', function (value) {
+            var nm = (value || '').trim();
             if (!nm) return;
-            var err = PadelApp.state.addPlayer(nm, g);
+            var err = PadelApp.state.addPlayer(nm, null);
             if (err) { PadelApp.modal.alert(err); return; }
             var ps = PadelApp.state.players();
             var newId = ps.length ? ps[ps.length - 1].id : null;
             if (newId == null) return;
             var err2 = PadelApp.state.swapPlayer(view.roundIdx, sci, slot, newId);
             if (err2) PadelApp.modal.alert(err2);
-          };
-          if (mixed) {
-            PadelApp.modal.form('Add player',
-              '<label class="fld">Name<input class="modal-input" id="ap-name" type="text" /></label>' +
-              '<label class="fld">Gender<select class="modal-input" id="ap-gender"><option value="">—</option><option value="M">Male</option><option value="F">Female</option></select></label>',
-              function (overlay) {
-                var nm = (overlay.querySelector('#ap-name').value || '').trim();
-                var g = overlay.querySelector('#ap-gender').value || null;
-                if (!nm) return;
-                if (!g) { PadelApp.modal.alert('Mixed pairing requires a gender.'); return; }
-                addDone(nm, g);
-              });
-          } else {
-            PadelApp.modal.prompt('Add player', '', function (value) {
-              addDone((value || '').trim(), null);
-            });
-          }
+          });
           return;
         }
         var err3 = PadelApp.state.swapPlayer(view.roundIdx, sci, slot, parseInt(val, 10));
@@ -497,12 +468,8 @@ PadelApp.run = (function () {
     var ni = root.querySelector('#run-name');
     if (ni) ni.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
-        var gEl2 = root.querySelector('#run-gender');
-        var g2 = gEl2 ? (gEl2.value || null) : null;
-        var nm = (ni.value || '').trim();
-        if (!nm) return;
-        if (PadelApp.state.settings().pairing === 'mixed' && !g2) { PadelApp.modal.alert('Mixed pairing requires a gender.'); return; }
-        var err = PadelApp.state.addPlayer(nm, g2);
+        var g2 = root.querySelector('#run-gender').value || null;
+        var err = PadelApp.state.addPlayer((ni.value || '').trim(), g2);
         if (err) PadelApp.modal.alert(err);
       }
     });

@@ -4,11 +4,10 @@ A fully client-side web app for organising padel match making events. All data i
 
 ## Features
 
-- **4 formats** — Americano, Mexicano, Mixed Americano, Mixed Mexicano.
-  - Americano pre-builds the complete round-robin schedule up front so partners/opponents rotate evenly.
-  - Mexicano re-ranks pairings from live points after every round.
-- **Matchmaking fairness**: court capacity (with fair byes), play-count balance, wait-time fairness, and partner/opponent uniqueness until combos are exhausted.
-- **Mixed constraint**: every team is one male + one female; uneven gender counts are handled gracefully.
+- **Match type × pairing** — two independent settings instead of fixed formats:
+  - **Match type**: Americano pre-builds the complete round-robin schedule up front so partners/opponents rotate evenly; Mexicano re-ranks pairings from live points after every round.
+  - **Pairing**: *Normal*, *Mixed* (one male + one female per team, gender required), or *Fixed* (roster entries are team names — Americano never re-pairs the same two teams, Mexicano pairs top vs bottom).
+- **Matchmaking fairness**: court capacity (with fair byes), play-count balance, wait-time fairness, and partner/opponent uniqueness until combos are exhausted; mixed events fill courts with "mixed pair + best available" before forcing a bye.
 - **Scoring**: configurable "total points" rule — a court ends when the two sides' scores add up to exactly the target (default 21, no ties), plus a reorderable ranking priority (wins, points, points diff, matches played, …) that's editable right from the Leaderboard tab (collapsible, with a High/Low direction switch).
 - **Live re-scheduling**: add/remove/toggle players mid-event regenerates only unplayed rounds — played rounds and their scores stay intact (toggleable "auto-regenerate", with a manual regenerate button).
 - **Player management**: remove requires a confirm, duplicate names are rejected, and you can swap a player on any unplayed court straight from the round page.
@@ -29,7 +28,7 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-Add at least 4 players in Setup, choose a format, then **Start Event**.
+Add at least 4 players (or 2 fixed teams per court) in Setup, choose a match type and pairing, then **Start Event**.
 
 ## Stack
 

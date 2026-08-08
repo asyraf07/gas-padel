@@ -4,6 +4,16 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**010 — Format & pairing redesign (match type × pairing, fixed teams, mixed gender)** (see `changes/010-format-pairing-redesign/CHANGE.md`).
+
+- `settings.format` split into `settings.matchType: 'americano'|'mexicano'` + `settings.pairing: 'normal'|'mixed'|'fixed'`; `normalizeMatch` migrates legacy `format` values (`americano`→normal, `mexicano`→normal, `mixed_americano`→mixed, `mixed_mexicano`→mixed). `isAmericano`/`isMexican` derive from `matchType`, `isMixed` from `pairing`, new `isFixed`.
+- Setup screen shows **Match type** on top, then **Pairing**, then **Courts**; the run header label is e.g. "Americano · Mixed · 2 courts".
+- **Fixed pairing:** each roster entry is a team name (no gender), `minPlayers()` = `numCourts × 2`; Americano round-robins ALL teams keeping only `numCourts` matches per round so opponents never repeat; Mexicano pairs top vs bottom via new `rankFixedCourts`.
+- **Mixed requires gender:** required on add (setup + Players tab + slot-picker modal), Start blocked until every active player has a gender, missing-gender badge on rows.
+- **10.4 fixes:** americano new-player fairness; mixed courts fill with "mixed pair + best available" before forced byes; gender-balanced on-court pick (`pickOnCourt` mixed) keeps byes fair; gender edit regenerates cleanly with played rounds/scores intact.
+
+**Previous change:**
+
 **009 — Player management: removal confirm, round-page substitution & regeneration toggle** (see `changes/009-player-mgmt-substitution-regen-toggle/CHANGE.md`).
 
 - Removing a player now requires a confirm modal (Setup list + Players tab); played rounds keep showing removed players as "(removed)".

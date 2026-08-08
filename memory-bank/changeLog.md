@@ -2,6 +2,27 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 010 — Format & pairing redesign (match type × pairing, fixed teams, mixed gender)
+
+**Applied:** yes
+
+**Summary:** (1) `settings.format` splits into `settings.matchType: 'americano'|'mexicano'` + `settings.pairing: 'normal'|'mixed'|'fixed'`; `normalizeMatch` migrates legacy `format` values (`americano`→normal, `mexicano`→normal, `mixed_americano`→mixed, `mixed_mexicano`→mixed). `isAmericano`/`isMexican` derive from `matchType`, `isMixed` from `pairing`, new `isFixed`. Setup shows Match type → Pairing → Courts; run header label e.g. "Americano · Mixed · 2 courts". (2) Fixed pairing: each entry is a team name (no gender), min players = `numCourts × 2`; Americano round-robins all teams keeping only `numCourts` matches/round so opponents never repeat; Mexicano pairs top vs bottom via new `rankFixedCourts`. (3) Mixed requires a gender on add (setup + Players tab + slot-picker modal), Start is blocked until every active player has a gender, and missing-gender rows get a badge. (4) 10.4 fixes: americano new-player fairness; mixed courts fill with "mixed pair + best available" before forced byes; gender-balanced on-court pick keeps byes fair; gender edit regenerates cleanly with played rounds/scores intact.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/state.js` | `defaultSettings` `matchType`/`pairing`; `normalizeMatch` legacy migration |
+| `js/matchmaking.js` | Derived flags; `pickOnCourt` perCourt + mixed balance; fixed-americano pool round-robin (no repeats); `rankFixedCourts`; mixed pass-2 fill; `buildRound` fixed branches; `isFixed` |
+| `js/setupScreen.js` | Match type/Pairing selects; team-name mode; required gender in mixed; missing-gender badge; Start validation |
+| `js/runScreen.js` | `label(s)` header/summary; `teamSlotsHtml` loops team length; `teamNames` history; pairing-aware Players-tab form + add modal |
+| `css/style.css` | `.badge` |
+
+**Snapshots:** `changes/010-format-pairing-redesign/before/` and `after/`.
+**Details:** `changes/010-format-pairing-redesign/CHANGE.md`.
+
+---
+
 ## 009 — Player management: removal confirm, round-page substitution & regeneration toggle
 
 **Applied:** yes

@@ -7,8 +7,7 @@ PadelApp.state = (function () {
 
   function defaultSettings() {
     return {
-      matchType: 'americano',
-      pairing: 'normal',
+      format: 'americano',
       numCourts: 1,
       totalPoints: 21,
       compensation: true,
@@ -53,15 +52,6 @@ PadelApp.state = (function () {
 
   function normalizeMatch(m) {
     var s = m.settings || {};
-    /* legacy `format` → matchType × pairing migration */
-    if (s.format) {
-      var legacy = String(s.format);
-      if (legacy === 'mixed_americano') { s.matchType = 'americano'; s.pairing = 'mixed'; }
-      else if (legacy === 'mixed_mexicano') { s.matchType = 'mexicano'; s.pairing = 'mixed'; }
-      else if (legacy === 'mexicano') { s.matchType = 'mexicano'; s.pairing = 'normal'; }
-      else { s.matchType = 'americano'; s.pairing = 'normal'; }
-      delete s.format;
-    }
     if (s.totalPoints == null && typeof s.winPoints === 'number') s.totalPoints = s.winPoints;
     delete s.winPoints;
     delete s.winByTwo;

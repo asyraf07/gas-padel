@@ -123,12 +123,6 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .g-m { background: rgba(56, 189, 248, .2); color: var(--m); }
 .g-f { background: rgba(244, 114, 182, .2); color: var(--f); }
 
-.badge {
-  display: inline-block; font-size: .62rem; font-weight: 700; padding: 1px 7px;
-  border-radius: 999px; background: rgba(251, 191, 36, .15); color: #fbbf24;
-  vertical-align: middle; margin-left: 6px; text-transform: uppercase; letter-spacing: .3px;
-}
-
 /* priority editor */
 .prio-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .prio-name { flex: 1; }
