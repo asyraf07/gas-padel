@@ -157,3 +157,202 @@ Three enhancements: (1) an editable ranking-priority card and column legend on t
 - Manual: save one court's score mid-round → leaderboard reflects it immediately; edit a played score → table and future rounds update; rename player/event/date via custom modals; delete-event confirm is the custom modal; court card shows names above each score input.
 
 > Implementation of this plan follows the memory-bank convention: create `memory-bank/changes/006-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
+# Feature 007 — Leaderboard polish: collapsible priority editor, table-first layout & overflow fix
+
+## Goal
+Polish the Leaderboard tab: make the ranking-priority editor less prominent, put the leaderboard table first, restyle the direction toggle, and fix the cramped/overflowing table on narrow screens.
+
+## Sub-feature 7.1 — Leaderboard layout & priority editor
+
+1. **Table on top.** `leaderboardTab()` currently renders the priority card before the table; reorder so the table (with its "Ranked by:" line) is the first element on the tab.
+2. **Collapsible priority editor.** Wrap the `#prio` editor in a `<details>` ("Ranking priority") instead of a full card so it's hidden by default and the table stays in focus. Editing still applies immediately and re-sorts the table (keeps the shared `PadelApp.prio` binding).
+3. **Direction-toggle restyle.** Replace the `↑/↓` button + "high first"/"low first" text in `prioEditor.js` with a clearer segmented control (e.g. a two-state High/Low switch) that is thumb-sized.
+
+## Sub-feature 7.2 — Leaderboard overflow fix
+
+1. **Horizontal scroll.** Wrap the `.lb` table in an `overflow-x:auto` container with a `min-width` so the 9 columns don't get crushed on phones.
+2. **Name truncation.** Give `.lbname` a `max-width` + `text-overflow: ellipsis` (with `overflow-wrap` fallback) so long names don't break the row.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/runScreen.js` | Reorder `leaderboardTab()`; collapse priority editor behind `<details>` |
+| `js/prioEditor.js` | Segmented High/Low direction toggle |
+| `css/style.css` | `.lb` scroll container + `min-width`, `.lbname` truncation, toggle styles |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check` on edited JS.
+- Manual: on a narrow phone the table scrolls horizontally instead of crushing; the priority editor is collapsed by default and edits still re-sort; the direction toggle is obvious to tap.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/007-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
+# Feature 008 — Faster score entry & finish-event flow
+
+## Goal
+Speed up score entry with quick-select chips and auto-derived opponent scores, and add an explicit "Finish event" action that locks the event and shows a final summary.
+
+## Sub-feature 8.1 — Quick score entry
+
+1. **Quick-select chips.** Each court side shows preset score chips (e.g. 11 / 12 / 15 / 18 / 21). Tapping one sets that side's score.
+2. **Manual input with auto-derive.** The numeric input stays for exact values. For both chips and manual entry, the opponent side auto-derives as `totalPoints − score`, so ties and over-totals are impossible; validation reduces to `0 ≤ score ≤ totalPoints`.
+3. Both entry styles save via the existing `recordScore`/`editScore` flow (no change to round-completion behavior).
+
+## Sub-feature 8.2 — Finish event
+
+1. **Finish button.** A "Finish event" button (Courts tab / header) asks for confirmation via the custom modal, then sets `match.finished = true`.
+2. **Lock.** When finished, score entry, score edit, roster changes (add/remove/toggle/rename) and round-slot edits are blocked; the header shows a "Finished" state.
+3. **Summary.** The Leaderboard tab shows a final summary banner (event name/date/format, winner = rank 1) that feeds the share image (Feature 011).
+4. **Menu status.** `menuScreen` shows the existing "Finished" badge for finished events.
+5. Optionally an "Undo finish" keeps the event editable again.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/state.js` | `finished` in match state + migration; `finishEvent()`/`unfinishEvent()`; guard `recordScore`/`editScore`/player actions when finished |
+| `js/runScreen.js` | Score chips + auto-derive in `courtCards`; finish button, locked rendering, summary banner |
+| `js/menuScreen.js` | Finished status from `match.finished` (in addition to all-rounds-played) |
+| `css/style.css` | Chips, finish button, summary banner, locked-state styles |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check`.
+- Headless: auto-derive math (`total − n`); finish blocks score/roster mutations.
+- Manual: chip tap + manual entry save instantly and never allow ties/over-total; finish event → summary shown and edits locked; menu badge updates.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/008-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
+# Feature 009 — Player management: removal confirm, round-page substitution & regeneration toggle
+
+## Goal
+Make player management safer and more flexible: confirm removals, allow substituting players on an unplayed round's court, add a toggle that controls whether unplayed rounds auto-regenerate on roster changes, and prevent duplicate player names.
+
+## Sub-feature 9.1 — Remove-player confirm & handling
+
+1. **Confirm before removal.** A "Remove player" button (Setup list and Players tab) opens the custom modal: "Remove NAME? Unplayed rounds will be regenerated without them; played rounds keep their scores." Confirming calls `removePlayer` (existing behavior).
+2. Played rounds keep showing the removed player's name as "(removed)".
+
+## Sub-feature 9.2 — Change player on the round page
+
+1. Each **unplayed** court card gains a "change player" action per slot: a picker over the current roster (plus an option to add a new player). Selecting one swaps that slot's id for upcoming rounds; played rounds and their scores are untouched.
+2. When auto-regeneration is ON the swap applies and the rest of the schedule rebalances via `buildUnplayed`; when OFF only that court is updated.
+
+## Sub-feature 9.3 — Regeneration toggle
+
+1. New `settings.autoRegenerate` (default `true`). A checkbox on the Players tab: "Auto-regenerate unplayed rounds when players change".
+2. When OFF, `addPlayer`/`removePlayer`/`toggleActive`/`setGender` stop calling `buildUnplayed`; a manual **"Regenerate rounds"** button appears on the Courts tab to rebuild on demand.
+
+## Sub-feature 9.4 — Prevent duplicate names
+
+1. `addPlayer`/`renamePlayer` reject a case-insensitive duplicate name (trimmed); the UI surfaces the message via the custom modal instead of adding.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/state.js` | `settings.autoRegenerate`; guard `buildUnplayed` calls behind it + `regenerateUnplayed()`; duplicate-name check; slot-swap action for unplayed courts |
+| `js/runScreen.js` | Remove confirm modal; court-card player edit + picker; regenerate button; autoRegenerate checkbox |
+| `js/setupScreen.js` | Remove confirm modal; duplicate-name validation |
+| `css/style.css` | Player-edit affordances, checkbox, regenerate button |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check`.
+- Headless: autoRegenerate OFF keeps rounds unchanged on roster edits; duplicates blocked; slot swap updates the round.
+- Manual: remove requires confirm; changing a player on a court updates future rounds only; toggling regeneration changes whether edits re-schedule.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/009-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
+# Feature 010 — Format & pairing redesign (match type × pairing, fixed teams, mixed gender)
+
+## Goal
+Split the single `format` setting into two independent axes — **match type** (Americano/Mexicano) and **pairing** (Normal/Mixed/Fixed) — add a fixed-pairing mode where the roster is made of team names, require genders in mixed mode, and fix the matchmaking edge cases in Americano/mixed.
+
+## Sub-feature 10.1 — Split match type × pairing
+
+1. **Model.** `settings.format` → `settings.matchType: 'americano'|'mexicano'` + `settings.pairing: 'normal'|'mixed'|'fixed'`.
+2. **Migration.** `normalizeMatch` maps legacy `format` values (`americano` → normal, `mixed_americano` → mixed, …).
+3. **Matchmaking.** `isAmericano`/`isMexican` derive from `matchType`; `isMixed` from `pairing === 'mixed'`.
+4. **Setup UI.** Two selects — **Match type on top**, then **Pairing**, then Courts.
+5. **Run header.** Label becomes e.g. "Americano · Mixed · 2 courts".
+
+## Sub-feature 10.2 — Fixed-pairing mode (team names)
+
+1. When `pairing:'fixed'` the roster entries are **team names** — the add-player field becomes "Team name" and one entry represents a fixed pair; no gender is asked.
+2. Matchmaking treats each entry as a full team: Americano round-robins the teams (minimizing opponent repeats); Mexicano ranks teams by points (top vs bottom). Reuses `pairIntoCourts` with single-id teams.
+3. `fixed` is mutually exclusive with `mixed`.
+
+## Sub-feature 10.3 — Mixed requires gender
+
+1. When `pairing:'mixed'` the gender field is **required** when adding a player.
+2. Start is blocked until every active player has a gender (upgrade from the current soft warning), with a "missing gender" badge on affected rows.
+
+## Sub-feature 10.4 — Matchmaking bug fixes
+
+1. **Americano new player.** A player added mid-event integrates fairly — play-count balance and no partner/opponent repeats against the regenerated schedule.
+2. **Mixed total round.** Fill a court with "mixed pair + best available" before forcing byes.
+3. **Mixed odd players.** Fair bye rotation so the same player isn't always sitting out.
+4. **Mixed + gender edit.** Editing a gender mid-event regenerates cleanly; played rounds and their scores stay intact.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/state.js` | `defaultSettings`/`normalizeMatch` migration; `settings.matchType`/`pairing` |
+| `js/matchmaking.js` | Derived flags from new fields; fixed-pairing team rotation; mixed fill/bye/gender-edit fixes |
+| `js/setupScreen.js` | Match type + pairing selects; team-name mode; required gender in mixed |
+| `js/runScreen.js` | Header label from `matchType`/`pairing`; team rendering |
+| `css/style.css` | Setup layout tweaks |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check`.
+- Headless: legacy-format migration; fixed-pairing round-robin (teams never re-pair); mixed edge cases (odd counts, unbalanced genders, gender edit); americano new-player fairness.
+- Manual: set up a fixed event with team names; mixed mode requires a gender per player and blocks start otherwise.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/010-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
+# Feature 011 — Share as image & photo avatars
+
+## Goal
+Let users share the final leaderboard as a generated image, and give players optional photo avatars (cached in localStorage) that appear in the share template and player rows.
+
+## Sub-feature 11.1 — Share as image
+
+1. **Canvas render.** A `shareImage` module draws the event header (name/date/format) + the current/final leaderboard onto a canvas.
+2. **Output.** Download as PNG and, where supported, `navigator.share`.
+3. **Entry points.** A "Share" button on the Leaderboard tab and on the finish-event summary (Feature 008).
+
+## Sub-feature 11.2 — Photo avatars
+
+1. **Upload.** A photo button on each player row (Setup + Players tab) reads a file, downscales to ~96px and encodes as a JPEG data URL.
+2. **Cache.** Avatars are stored under a dedicated `localStorage` key (e.g. `padelAvatars`) keyed by player id (compressed to respect the ~5 MB quota).
+3. **Usage.** Avatars render in the share-image template and on player rows / leaderboard names.
+4. **Clear.** A "Remove all stored avatars" button (Players tab) wipes the key.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/shareImage.js` (new) | Canvas rendering + PNG download / `navigator.share` |
+| `js/avatar.js` (new) | Avatar store (compressed data URLs) + clear-all |
+| `js/runScreen.js` | Share button; avatar display + upload UI; clear-all |
+| `js/setupScreen.js` | Avatar upload/display on player rows |
+| `index.html` | Load `js/avatar.js`, `js/shareImage.js` |
+| `css/style.css` | Avatar + share styles |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check`.
+- Headless: avatar store compresses and round-trips; clear-all empties.
+- Manual: upload an avatar → shows in rows and in the generated image; Share downloads/shares a PNG; Remove-all clears the cache.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/011-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
