@@ -422,6 +422,33 @@ The picker modal rendered a `Cancel` button with `data-m="cancel"` but its click
 
 ---
 
+# Feature 011c — Reshuffle upcoming rounds & opponents
+
+## Goal
+Give the event page a "Reshuffle" action that shuffles the order of the unplayed rounds and which pairs face each other — while keeping every pair (team) together.
+
+## Behavior
+1. **Button.** The Courts tab shows a "Reshuffle upcoming rounds & opponents" button whenever the event is not finished and at least one unplayed round has no saved scores.
+2. **Confirm warning.** Tapping it opens a custom confirm modal explaining that the order of unplayed rounds and the opponents will be shuffled at random, pairs stay together, and played rounds / saved scores are untouched.
+3. **What is shuffled.** For every unplayed, fully-unscored round: the round's pairs are collected and randomly re-paired into courts (so who faces whom changes), and the free rounds themselves are re-ordered among themselves. Played rounds, partially-scored rounds and all saved scores stay exactly as they are; round numbers are re-sequenced.
+4. **Where it lives.** `PadelApp.match.reshuffleUnplayed(state)` (pure, Fisher-Yates) + `PadelApp.state.reshuffleUnplayed()` wrapper; the button + confirm are wired in `js/runScreen.js`.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/matchmaking.js` | New `shuffle()` + `reshuffleUnplayed(state)` (keeps pairs, re-pairs opponents, reorders free rounds); exported |
+| `js/state.js` | `reshuffleUnplayed()` action (no-op when finished or no free rounds); exported |
+| `js/runScreen.js` | `data-act="reshuffle"` button on the Courts tab + confirm modal wiring |
+| `PLAN.md` | Feature 011c section |
+
+## Verification
+- `node --check`.
+- Headless: pairs preserved as a multiset; free rounds kept unscored and re-sequenced; round 0 (partial) untouched; no player appears twice within a round; schedule content changes; finished events and no-free-rounds return 0; Courts tab shows the button only when free rounds exist and the event isn't finished; the confirm's OK triggers the action.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/011c-reshuffle-upcoming-rounds/` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
 # Feature 012 — Share as image & photo avatars
 
 ## Goal

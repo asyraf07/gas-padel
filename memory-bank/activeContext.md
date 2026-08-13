@@ -4,6 +4,13 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**011c — Reshuffle upcoming rounds & opponents** (see `changes/011c-reshuffle-upcoming-rounds/CHANGE.md`).
+
+- The Courts tab gets a **"Reshuffle upcoming rounds & opponents"** button (visible when the event isn't finished and at least one unplayed round has no saved scores), guarded by a confirm modal that warns the round order and opponent pairings will be shuffled at random while pairs stay together and played rounds / saved scores are untouched.
+- `PadelApp.match.reshuffleUnplayed(state)` (Fisher-Yates) reorders the free unplayed rounds among themselves and re-pairs each round's pairs into courts — preserving every pair as a set, never duplicating a player within a round, leaving partially-scored rounds alone, and re-sequencing round numbers. `PadelApp.state.reshuffleUnplayed()` wraps it (no-op when finished or nothing free).
+
+**Previous change:**
+
 **011b — Score modal cancel fix & live score counter** (see `changes/011b-score-modal-cancel-live-counter/CHANGE.md`).
 
 - The score-picker modal's **Cancel button now works** — `picker()` previously only listened for `.pick-btn` taps, so `data-m="cancel"` was never handled.

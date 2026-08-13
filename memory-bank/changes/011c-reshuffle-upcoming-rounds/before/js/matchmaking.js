@@ -336,55 +336,6 @@ PadelApp.match = (function () {
     return t;
   }
 
-  /* ---- Fisher-Yates shuffle (in place) ---- */
-  function shuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-    }
-    return arr;
-  }
-
-  /* ---- manual reshuffle of unplayed, unscored rounds ----
-     Keeps every pair (team) together but:
-       1. shuffles the order of the free unplayed rounds among themselves, and
-       2. re-pairs each round's pairs randomly (which pair faces which pair).
-     Played rounds, partially-scored rounds and all saved scores are untouched.
-     Returns the number of rounds reshuffled. */
-  function reshuffleUnplayed(state) {
-    var rounds = state.rounds || [];
-    var freeIdx = [], free = [];
-    rounds.forEach(function (r, i) {
-      if (!r.played && (r.courts || []).length && (r.courts || []).every(function (c) { return c.score === null; })) {
-        freeIdx.push(i);
-        free.push(r);
-      }
-    });
-    if (!free.length) return 0;
-
-    shuffle(free);
-
-    free.forEach(function (r) {
-      var pairs = [];
-      (r.courts || []).forEach(function (c) {
-        pairs.push(c.teamA.slice());
-        pairs.push(c.teamB.slice());
-      });
-      if (pairs.length >= 2) {
-        shuffle(pairs);
-        var courts = [];
-        for (var i = 0; i + 1 < pairs.length; i += 2) {
-          courts.push({ teamA: pairs[i], teamB: pairs[i + 1], score: null });
-        }
-        r.courts = courts;
-      }
-    });
-
-    freeIdx.forEach(function (idx, i) { rounds[idx] = free[i]; });
-    rounds.forEach(function (r, i) { r.roundNumber = i + 1; });
-    return free.length;
-  }
-
   /* ---- main entry: regenerate ALL unplayed rounds from state ---- */
   function buildUnplayed(state) {
     var settings = state.settings;
@@ -429,7 +380,6 @@ PadelApp.match = (function () {
 
   return {
     buildUnplayed: buildUnplayed,
-    reshuffleUnplayed: reshuffleUnplayed,
     isAmericano: isAmericano,
     isMixed: isMixed,
     isMexican: isMexican,

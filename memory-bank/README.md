@@ -43,4 +43,5 @@ Both folders mirror the live project layout (`index.html`, `css/style.css`, `js/
 | 010b | Mixed Americano round balancing & gender-even verification | Applied |
 | 011 | Modal score picker & setup gender editing | Applied |
 | 011b | Score modal cancel fix & live score counter | Applied |
+| 011c | Reshuffle upcoming rounds & opponents | Applied |
 | 012 | Share as image & photo avatars | Planned |

@@ -164,12 +164,7 @@ PadelApp.run = (function () {
     var regen = (!s.settings.autoRegenerate && !s.finished)
       ? '<div class="regen-row"><button class="btn" data-act="regen">Regenerate rounds</button>' +
         '<div class="hint">Auto-regeneration is off; rebuild upcoming rounds on demand.</div></div>' : '';
-    var reshuf = (!s.finished && (s.rounds || []).some(function (rr) {
-      return !rr.played && (rr.courts || []).length && (rr.courts || []).every(function (c) { return c.score === null; });
-    }))
-      ? '<div class="regen-row"><button class="btnghost" data-act="reshuffle">Reshuffle upcoming rounds &amp; opponents</button>' +
-        '<div class="hint">Keeps every pair together — shuffles the order of unplayed rounds and which pairs face each other. Saved scores are untouched.</div></div>' : '';
-    return roundNav(s) + courtCards(r) + byes + regen + reshuf + historyHtml(s) + endOfRound(s);
+    return roundNav(s) + courtCards(r) + byes + regen + historyHtml(s) + endOfRound(s);
   }
 
   function endOfRound(s) {
@@ -513,18 +508,6 @@ PadelApp.run = (function () {
       }
       var regen = e.target.closest('[data-act="regen"]');
       if (regen) { PadelApp.state.regenerateUnplayed(); return; }
-
-      var reshuf = e.target.closest('[data-act="reshuffle"]');
-      if (reshuf) {
-        PadelApp.modal.confirm(
-          'Reshuffle upcoming rounds?\n\n' +
-          'The order of the unplayed rounds and which pairs play each other will be shuffled at random.\n\n' +
-          'Your current pairs stay together, and played rounds and saved scores are not touched.',
-          'Reshuffle', function (ok) {
-            if (ok) PadelApp.state.reshuffleUnplayed();
-          });
-        return;
-      }
     });
 
     root.addEventListener('change', function (e) {

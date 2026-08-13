@@ -259,14 +259,6 @@ PadelApp.state = (function () {
     changed();
   }
 
-  /* shuffle the order of unplayed rounds and their opponents, keeping pairs fixed */
-  function reshuffleUnplayed() {
-    var m = get(); if (!m || m.finished) return 0;
-    var n = PadelApp.match.reshuffleUnplayed(m);
-    if (n) changed();
-    return n;
-  }
-
   /* swap the player in one slot of an unplayed, unscored court */
   function hasPartialRound(m) {
     return (m.rounds || []).some(function (r) {
@@ -378,7 +370,7 @@ PadelApp.state = (function () {
     renameEvent: renameEvent, setEventDate: setEventDate,
     addPlayer: addPlayer, removePlayer: removePlayer, renamePlayer: renamePlayer,
     toggleActive: toggleActive, setGender: setGender,
-    start: start, regenerateUnplayed: regenerateUnplayed, reshuffleUnplayed: reshuffleUnplayed, updateSettings: updateSettings,
+    start: start, regenerateUnplayed: regenerateUnplayed, updateSettings: updateSettings,
     updateSettingsSilent: updateSettingsSilent,
     swapPlayer: swapPlayer,
     finishEvent: finishEvent, unfinishEvent: unfinishEvent,
