@@ -122,25 +122,6 @@ PadelApp.modal = (function () {
     }
   }
 
-  /* picker(label[, options][, onPick]) — grid of tappable buttons; onPick(value) */
-  function picker(label, options, onPick) {
-    if (typeof options === 'function') { onPick = options; options = []; }
-    var btns = (options || []).map(function (v) {
-      return '<button type="button" class="pick-btn" data-v="' + v + '">' + v + '</button>';
-    }).join('');
-    var overlay = open('<div class="modal-title">' + esc(label) + '</div>' +
-      '<div class="modal-body pick-grid">' + (btns || '<div class="muted">No options.</div>') + '</div>' +
-      '<div class="modal-actions"><button class="btnghost" data-m="cancel">Cancel</button></div>');
-    overlay.addEventListener('click', function (e) {
-      var b = e.target.closest('.pick-btn');
-      if (!b) return;
-      var v = parseInt(b.getAttribute('data-v'), 10);
-      close();
-      if (typeof onPick === 'function') onPick(v);
-    });
-    return null;
-  }
-
   function bindButtons(overlay, done) {
     overlay.addEventListener('click', function (e) {
       var b = e.target.closest('[data-m]');
@@ -153,5 +134,5 @@ PadelApp.modal = (function () {
     });
   }
 
-  return { alert: alert, confirm: confirm, prompt: prompt, form: form, picker: picker, close: close };
+  return { alert: alert, confirm: confirm, prompt: prompt, form: form, close: close };
 })();

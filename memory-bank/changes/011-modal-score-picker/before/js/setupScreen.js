@@ -34,16 +34,10 @@ PadelApp.setup = (function () {
     if (!pl.length) return '<p class="muted">No players yet. Add at least ' + minPlayers() + '.</p>';
     return pl.map(function (p, i) {
       var badge = mixed && !p.gender ? ' <span class="badge">missing gender</span>' : '';
-      var gsel = s.pairing === 'fixed' ? '' :
-        '<select class="gsel" data-id="' + p.id + '" title="Gender">' +
-        '<option value="">&mdash;</option>' +
-        '<option value="M"' + (p.gender === 'M' ? ' selected' : '') + '>M</option>' +
-        '<option value="F"' + (p.gender === 'F' ? ' selected' : '') + '>F</option></select>';
       return '<div class="ply" data-id="' + p.id + '">' +
         '<span class="gidx">' + (i + 1) + '</span>' + gb(p.gender) +
         '<span class="pname">' + esc(p.name) + badge + '</span>' +
         '<button class="btnghost small" data-act="renameplayer" data-id="' + p.id + '" title="Rename player">&#9998;</button>' +
-        gsel +
         '<button class="btnghost small" data-act="remove">&times; Remove</button>' +
         '</div>';
     }).join('');
@@ -221,11 +215,6 @@ PadelApp.setup = (function () {
         });
         return;
       }
-    });
-
-    root.addEventListener('change', function (e) {
-      var gsel = e.target.closest('.gsel');
-      if (gsel) PadelApp.state.setGender(Number(gsel.getAttribute('data-id')), gsel.value || null);
     });
 
     PadelApp.prio.bind(root,

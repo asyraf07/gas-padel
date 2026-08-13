@@ -86,6 +86,16 @@ PadelApp.run = (function () {
       '</div>';
   }
 
+  var CHIPS = [11, 12, 15, 18, 21];
+
+  function chipsHtml(total, ci, side) {
+    var cs = CHIPS.filter(function (n) { return n <= total; });
+    if (!cs.length) return '';
+    return '<div class="chips">' + cs.map(function (n) {
+      return '<button type="button" class="chip" data-court="' + ci + '" data-side="' + side + '" data-val="' + n + '">' + n + '</button>';
+    }).join('') + '</div>';
+  }
+
   function slotSel(globalSlot, curId, ci) {
     var ps = PadelApp.state.players();
     var active = ps.filter(function (p) { return p.active; });
@@ -132,11 +142,13 @@ PadelApp.run = (function () {
         var vb = (editing && c.score) ? c.score[1] : '';
         body = '<div class="cscore">' +
           '<div class="cteam"><div class="teamrow">' + teamSlotsHtml(c.teamA, i, 0, showPickers) + '</div>' +
-          '<div class="tscore"><input type="number" id="sc-a-' + i + '" min="0" max="' + total + '" placeholder="0" value="' + va + '" readonly' + (locked ? ' disabled' : '') + ' data-pick="a" data-court="' + i + '" /></div>' +
+          '<div class="tscore"><input type="number" id="sc-a-' + i + '" min="0" max="' + total + '" placeholder="0" inputmode="numeric" value="' + va + '"' + (locked ? ' disabled' : '') + ' /></div>' +
+          (locked ? '' : chipsHtml(total, i, 'a')) +
           '</div>' +
           '<div class="vsline">vs</div>' +
           '<div class="cteam"><div class="teamrow">' + teamSlotsHtml(c.teamB, i, 2, showPickers) + '</div>' +
-          '<div class="tscore"><input type="number" id="sc-b-' + i + '" min="0" max="' + total + '" placeholder="0" value="' + vb + '" readonly' + (locked ? ' disabled' : '') + ' data-pick="b" data-court="' + i + '" /></div>' +
+          '<div class="tscore"><input type="number" id="sc-b-' + i + '" min="0" max="' + total + '" placeholder="0" inputmode="numeric" value="' + vb + '"' + (locked ? ' disabled' : '') + ' /></div>' +
+          (locked ? '' : chipsHtml(total, i, 'b')) +
           '</div>' +
           '</div>' +
           '<div class="score-actions">' +
@@ -306,19 +318,6 @@ PadelApp.run = (function () {
 
   /* -------- event wiring -------- */
   function bind(root) {
-    function openScorePicker(ci, side) {
-      var tp = PadelApp.state.settings().totalPoints;
-      var opts = [];
-      for (var n = 0; n <= tp; n++) opts.push(n);
-      PadelApp.modal.picker('Score — court ' + (ci + 1) + ' (' + (side === 'a' ? 'Team A' : 'Team B') + ')', opts, function (v) {
-        var iA = root.querySelector('#sc-a-' + ci);
-        var iB = root.querySelector('#sc-b-' + ci);
-        if (!iA || !iB) return;
-        if (side === 'a') { iA.value = v; iB.value = tp - v; }
-        else { iB.value = v; iA.value = tp - v; }
-      });
-    }
-
     root.addEventListener('click', function (e) {
       var t = e.target.closest('[data-tab]');
       if (t) { view.tab = t.getAttribute('data-tab'); view.editing = null; PadelApp.app.renderAll(); return; }
@@ -337,11 +336,18 @@ PadelApp.run = (function () {
       var ce = e.target.closest('[data-act="canceledit"]');
       if (ce) { view.editing = null; PadelApp.app.renderAll(); return; }
 
-      var chip = e.target.closest('.tscore input[data-pick]');
-      if (chip && !chip.disabled) {
+      var chip = e.target.closest('.chip');
+      if (chip) {
         var cci = parseInt(chip.getAttribute('data-court'), 10);
-        var css = chip.getAttribute('data-pick');
-        openScorePicker(cci, css);
+        var css = chip.getAttribute('data-side');
+        var cv = parseInt(chip.getAttribute('data-val'), 10);
+        var tp = PadelApp.state.settings().totalPoints;
+        var iA = root.querySelector('#sc-a-' + cci);
+        var iB = root.querySelector('#sc-b-' + cci);
+        if (iA && iB) {
+          if (css === 'a') { iA.value = cv; iB.value = tp - cv; }
+          else { iB.value = cv; iA.value = tp - cv; }
+        }
         return;
       }
 
@@ -470,6 +476,21 @@ PadelApp.run = (function () {
         var err3 = PadelApp.state.swapPlayer(view.roundIdx, sci, slot, parseInt(val, 10));
         if (err3) PadelApp.modal.alert(err3);
         return;
+      }
+    });
+
+    root.addEventListener('input', function (e) {
+      var inp = e.target.closest('.tscore input');
+      if (!inp) return;
+      var m = /^sc-(a|b)-(\d+)$/.exec(inp.id);
+      if (!m) return;
+      var side = m[1];
+      var ci = parseInt(m[2], 10);
+      var v = parseInt(inp.value, 10);
+      var tp = PadelApp.state.settings().totalPoints;
+      if (!isNaN(v) && v >= 0 && v <= tp) {
+        var oth = root.querySelector('#sc-' + (side === 'a' ? 'b' : 'a') + '-' + ci);
+        if (oth && oth !== document.activeElement) oth.value = tp - v;
       }
     });
 

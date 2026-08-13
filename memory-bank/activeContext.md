@@ -4,6 +4,14 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**011 — Modal score picker & setup gender editing** (see `changes/011-modal-score-picker/CHANGE.md`).
+
+- The fixed quick-score chips on the Courts tab are replaced by a **score picker modal**: tapping either team's score opens a grid of `0..totalPoints` options (`PadelApp.modal.picker`); picking one sets that side and auto-derives the opponent (`totalPoints − score`). Court-card score inputs are readonly tap-to-pick; Save still uses `recordScore`/`editScore`, and editing a played score opens the same picker.
+- The **Setup (create-event) page** now has an M / — / F gender select per player row (via `state.setGender`), so genders can be set/changed before starting; badges and the mixed gender-parity warning update live.
+- The planned "Share as image & photo avatars" feature was renumbered from 011 to **012**.
+
+**Previous change:**
+
 **010b — Mixed Americano round balancing & gender-even verification** (see `changes/010b-mixed-americano-round-balance/CHANGE.md`).
 
 - Bugfix for feature 010's mixed Americano: with 4 players (2M/2F) the schedule built 3 rounds although only 2 man–woman pairings exist per gender — round 3 replayed round 1's pairing. Partner pairs must never repeat in Americano.
@@ -36,7 +44,7 @@ Current working state of the project and the latest decisions.
 **008 — Faster score entry & finish-event flow** (see `changes/008-faster-score-entry-finish-flow/CHANGE.md`).
 
 - Quick score entry: preset score chips (11/12/15/18/21) per court side; tapping a chip or typing a side derives the opponent as `totalPoints − score`, so ties/over-totals are impossible; validation reduces to `0 ≤ score ≤ totalPoints`. Saving uses the existing `recordScore`/`editScore` flow.
-- Finish event: "Finish" button (run header) → custom-modal confirm → `match.finished = true`. When finished, score entry/edit and roster changes are blocked at the state level and disabled in the UI, the header shows a "Finished" badge, court cards show a "locked" tag, the Leaderboard shows a final summary banner (event name/date/format + winner = rank 1, feeding Feature 011), and the menu shows Finished from `match.finished`. "Undo finish" reopens the event.
+- Finish event: "Finish" button (run header) → custom-modal confirm → `match.finished = true`. When finished, score entry/edit and roster changes are blocked at the state level and disabled in the UI, the header shows a "Finished" badge, court cards show a "locked" tag, the Leaderboard shows a final summary banner (event name/date/format + winner = rank 1, feeding Feature 012), and the menu shows Finished from `match.finished`. "Undo finish" reopens the event.
 
 **Previous change:**
 

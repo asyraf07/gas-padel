@@ -2,6 +2,27 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 011 — Modal score picker & setup gender editing
+
+**Applied:** yes
+
+**Summary:** (1) Replaced the fixed quick-score chips (11/12/15/18/21) on the Courts tab with a **score picker modal**: tapping either team's score on an unplayed, unlocked court opens a `PadelApp.modal.picker` grid of `0..totalPoints` options; picking one sets that side and auto-derives the opponent (`totalPoints − score`), so ties/over-totals stay impossible; Save still uses `recordScore`/`editScore` and editing a played score opens the same picker. Court-card score inputs are now readonly tap-to-pick triggers (no chips). (2) The **Setup (create-event) page** gains an M / — / F gender select on each player row (mirroring the Players tab), wired to `state.setGender`, so a gender can be set/changed before start; the missing-gender badge and mixed-mode gender-parity warning update live. Also renumbered the planned "Share as image & photo avatars" feature from 011 to **012**.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/modal.js` | New `picker(label, options, onPick)` option-grid modal |
+| `js/runScreen.js` | Removed chips + auto-derive input listener; readonly tap-to-pick score inputs; `openScorePicker` |
+| `js/setupScreen.js` | Gender select per Setup player row (`setGender`) |
+| `css/style.css` | `.pick-grid`/`.pick-btn`; `.tscore input[readonly]`; removed `.chips`/`.chip` |
+| `PLAN.md` | New Feature 011; former Feature 011 → 012 |
+
+**Snapshots:** `changes/011-modal-score-picker/before/` and `after/`.
+**Details:** `changes/011-modal-score-picker/CHANGE.md`.
+
+---
+
 ## 010b — Mixed Americano round balancing & gender-even verification
 
 **Applied:** yes

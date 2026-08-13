@@ -86,7 +86,7 @@ PadelApp.run = (function () {
       '</div>';
   }
 
-  function slotSel(globalSlot, curId, ci) {
+    function slotSel(globalSlot, curId, ci) {
     var ps = PadelApp.state.players();
     var active = ps.filter(function (p) { return p.active; });
     var opts = active.map(function (p) {

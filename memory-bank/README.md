@@ -41,3 +41,5 @@ Both folders mirror the live project layout (`index.html`, `css/style.css`, `js/
 | 009 | Player management: removal confirm, round substitution & regeneration toggle | Applied |
 | 010 | Format & pairing redesign (match type × pairing, fixed teams, mixed gender) | Applied |
 | 010b | Mixed Americano round balancing & gender-even verification | Applied |
+| 011 | Modal score picker & setup gender editing | Applied |
+| 012 | Share as image & photo avatars | Planned |

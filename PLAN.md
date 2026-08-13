@@ -207,7 +207,7 @@ Speed up score entry with quick-select chips and auto-derived opponent scores, a
 
 1. **Finish button.** A "Finish event" button (Courts tab / header) asks for confirmation via the custom modal, then sets `match.finished = true`.
 2. **Lock.** When finished, score entry, score edit, roster changes (add/remove/toggle/rename) and round-slot edits are blocked; the header shows a "Finished" state.
-3. **Summary.** The Leaderboard tab shows a final summary banner (event name/date/format, winner = rank 1) that feeds the share image (Feature 011).
+3. **Summary.** The Leaderboard tab shows a final summary banner (event name/date/format, winner = rank 1) that feeds the share image (Feature 012).
 4. **Menu status.** `menuScreen` shows the existing "Finished" badge for finished events.
 5. Optionally an "Undo finish" keeps the event editable again.
 
@@ -357,18 +357,53 @@ Fix the unbalanced mixed Americano schedule and make mixed round generation solv
 
 ---
 
-# Feature 011 — Share as image & photo avatars
+# Feature 011 — Modal score picker & setup gender editing
+
+## Goal
+Replace the fixed quick-score chips on the Courts tab with a full score-picker modal (`0..totalPoints`), and let a player's gender be set/changed directly on the create-event (Setup) page.
+
+## Sub-feature 11.1 — Modal score picker (replaces chips)
+
+1. **No more preset chips.** The fixed quick-select chips (11/12/15/18/21) are removed from court cards; a score is entered by opening a picker.
+2. **Score picker modal.** Tapping either team's score on an unplayed, unlocked court opens a custom modal with a grid of tappable options from `0` to `totalPoints` (e.g. 0–21). Selecting one sets that side's score and auto-derives the opponent as `totalPoints − score`, so ties/over-totals remain impossible.
+3. **Same save flow.** The score inputs stay the single source of truth; Save uses the existing `recordScore`/`editScore` flow (round completion unchanged), and the picker also works in the edit-score flow.
+4. New `PadelApp.modal.picker(label, options, onPick)` renders the option grid.
+
+## Sub-feature 11.2 — Edit gender on the create-event page
+
+1. Each player row on the Setup screen gains a gender select (M / — / F), mirroring the Players tab — so a gender can be set or changed before the event starts without removing and re-adding the player.
+2. Changing it calls the existing `setGender` and re-renders, updating the missing-gender badge and the mixed-mode gender-parity warning live.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/modal.js` | New `picker()` (tappable option grid) |
+| `js/runScreen.js` | Remove chips; court-card score inputs become readonly tap-to-pick triggers that open the picker; auto-derive opponent on pick |
+| `js/setupScreen.js` | Gender select on each Setup player row (uses `setGender`) |
+| `css/style.css` | `.pick-grid`/`.pick-btn` modal grid; readonly `.tscore` cursor; remove `.chips`/`.chip` |
+| `PLAN.md` | This plan (renumbers the former Feature 011 → 012) |
+
+## Verification
+- `node --check`.
+- Headless: `picker()` renders options `0..totalPoints` and returns the tapped value; auto-derive math unchanged (`total − n`).
+- Manual: tapping a score opens the modal; picking a value fills both sides (opponent auto-derived); no chips remain; editing a played score uses the same picker; Setup rows show a gender select that updates the badge/parity warning live.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/011-modal-score-picker/` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
+# Feature 012 — Share as image & photo avatars
 
 ## Goal
 Let users share the final leaderboard as a generated image, and give players optional photo avatars (cached in localStorage) that appear in the share template and player rows.
 
-## Sub-feature 11.1 — Share as image
+## Sub-feature 12.1 — Share as image
 
 1. **Canvas render.** A `shareImage` module draws the event header (name/date/format) + the current/final leaderboard onto a canvas.
 2. **Output.** Download as PNG and, where supported, `navigator.share`.
 3. **Entry points.** A "Share" button on the Leaderboard tab and on the finish-event summary (Feature 008).
 
-## Sub-feature 11.2 — Photo avatars
+## Sub-feature 12.2 — Photo avatars
 
 1. **Upload.** A photo button on each player row (Setup + Players tab) reads a file, downscales to ~96px and encodes as a JPEG data URL.
 2. **Cache.** Avatars are stored under a dedicated `localStorage` key (e.g. `padelAvatars`) keyed by player id (compressed to respect the ~5 MB quota).
@@ -391,4 +426,4 @@ Let users share the final leaderboard as a generated image, and give players opt
 - Headless: avatar store compresses and round-trips; clear-all empties.
 - Manual: upload an avatar → shows in rows and in the generated image; Share downloads/shares a PNG; Remove-all clears the cache.
 
-> Implementation follows the memory-bank convention: create `memory-bank/changes/011-.../` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+> Implementation follows the memory-bank convention: create `memory-bank/changes/012-share-image-avatars/` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
