@@ -2,6 +2,25 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 010b — Mixed Americano round balancing & gender-even verification
+
+**Applied:** yes
+
+**Summary:** Bugfix for the mixed Americano schedule (feature 010): with 4 players (2M/2F) `buildUnplayed` generated `players.length − 1` = 3 rounds even though only 2 man–woman pairings exist per gender, so round 3 replayed round 1's pairing. Fixes: (1) a **gender-even gate** — mixed mode blocks Start unless active men = active women (modal + live setup warning; start-time only, mid-event changes still regenerate gracefully); (2) the Americano **round count caps at `min(players.length − 1, men, women)`** (2M/2F → 2 rounds, 4M/4F → 4 rounds, each male partners each female exactly once); (3) `buildAmericanoTeams` pairs mixed on-court players via a **maximum bipartite matching that prefers unused partner edges** (Kuhn augmenting-path search over `partCount ≤ t`, raising `t` only until a perfect matching exists) instead of the sequential greedy that could force a repeated pair. Normal Americano and both Mexicano modes are unchanged.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/matchmaking.js` | `perfectMixedMatching`/`mixedMatch` bipartite matching in `buildAmericanoTeams`; mixed Americano round-target cap in `buildUnplayed` |
+| `js/setupScreen.js` | Start gate on equal active men/women in mixed; live gender-count warning; pairing-hint wording |
+| `PLAN.md` | Bugfix 010b section |
+
+**Snapshots:** `changes/010b-mixed-americano-round-balance/before/` and `after/`.
+**Details:** `changes/010b-mixed-americano-round-balance/CHANGE.md`.
+
+---
+
 ## 010 — Format & pairing redesign (match type × pairing, fixed teams, mixed gender)
 
 **Applied:** yes

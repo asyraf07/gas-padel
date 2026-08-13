@@ -321,6 +321,42 @@ Split the single `format` setting into two independent axes — **match type** (
 
 ---
 
+# Bugfix 010b — Mixed Americano round balancing & gender-even verification
+
+## Goal
+Fix the unbalanced mixed Americano schedule and make mixed round generation solvable by requiring evenly distributed genders.
+
+## Issue
+- **Duplicate rounds.** With 4 players (2 men / 2 women) a mixed Americano built `players.length − 1` = 3 rounds, but with only 2 men there are exactly 2 man–woman partner pairs per gender, so round 3 replayed round 1's pairing (`[M1/F1 vs M2/F2]` twice). In Americano a partner pair must never repeat.
+
+## Sub-fixes
+
+1. **Gender-even verification (mixed mode).**
+   - Setup: Start is blocked in mixed mode unless the number of **active men equals the number of active women** ("Mixed mode needs an equal number of men and women (currently X men / Y women)."). A matching live warning shows in the setup warnings area, and the pairing hint notes that mixed needs equal men and women.
+   - Start-time gate only; mid-event roster changes still regenerate gracefully with the existing "best available" same-gender fill.
+
+2. **Mixed Americano round count.**
+   - `buildUnplayed` caps the Americano target to `min(players.length − 1, men, women)` so the schedule never asks for more unique man–woman pairings than exist: 2M/2F → 2 rounds, 4M/4F → 4 rounds (each male partners each female exactly once).
+
+3. **Partner-repeat-free mixed pairing.**
+   - `buildAmericanoTeams` in mixed mode pairs on-court men to women via a maximum bipartite matching that prefers partner edges never used before (Kuhn's augmenting-path search over edges with `partCount ≤ t`, raising `t` only until a perfect matching exists). The same-gender "best available" fill still runs afterwards for leftover (typically unbalanced mid-event) players.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/matchmaking.js` | Mixed Americano round-target cap in `buildUnplayed`; `mixedMatch` bipartite matching (prefers unused partner edges) used by `buildAmericanoTeams` |
+| `js/setupScreen.js` | Start gates mixed events on equal active men/women; live gender-count warning; pairing-hint wording |
+| `PLAN.md` | This plan |
+
+## Verification
+- `node --check`.
+- Headless: mixed 2M/2F → exactly 2 rounds with **zero partner-pair repeats**; 3M/3F and 4M/4F likewise (round count = `min(M,F)`, no partner repeat); normal Americano unchanged (n−1 rounds).
+- Manual: mixed setup with unequal genders blocks Start with a clear modal + live warning; a balanced setup builds a partner-repeat-free schedule.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/010b-mixed-americano-round-balance/` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
 # Feature 011 — Share as image & photo avatars
 
 ## Goal

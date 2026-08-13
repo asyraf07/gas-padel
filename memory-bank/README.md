@@ -36,3 +36,8 @@ Both folders mirror the live project layout (`index.html`, `css/style.css`, `js/
 | 004 | Setup improvements, compensation points & leaderboard priority | Applied |
 | 005 | Setup field persistence & scroll preservation | Applied |
 | 006 | Event editing, leaderboard polish & UX improvements | Applied |
+| 007 | Leaderboard polish: collapsible priority editor, table-first layout & overflow fix | Applied |
+| 008 | Faster score entry & finish-event flow | Applied |
+| 009 | Player management: removal confirm, round substitution & regeneration toggle | Applied |
+| 010 | Format & pairing redesign (match type × pairing, fixed teams, mixed gender) | Applied |
+| 010b | Mixed Americano round balancing & gender-even verification | Applied |

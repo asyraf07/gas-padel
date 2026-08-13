@@ -51,14 +51,6 @@ PadelApp.setup = (function () {
     var warns = [];
     if (act > 0 && act < min) warns.push('A game needs at least ' + min + ' active ' + (s.pairing === 'fixed' ? 'team' : 'player') + 's (' + s.numCourts + ' court' + (s.numCourts > 1 ? 's' : '') + '). You have ' + act + '.');
     if (s.pairing === 'mixed' && pl.some(function (p) { return p.active && !p.gender; })) warns.push('Mixed pairing requires a gender for every active player.');
-    if (s.pairing === 'mixed') {
-      var m = 0, f = 0;
-      pl.forEach(function (p) {
-        if (!p.active || !p.gender) return;
-        if (p.gender === 'F') f++; else m++;
-      });
-      if (m !== f) warns.push('Mixed mode needs an equal number of men and women to build a round-robin (you have ' + m + ' men and ' + f + ' women).');
-    }
     return warns.length ? '<div class="warn">' + warns.join('<br/>') + '</div>' : '';
   }
 
@@ -91,7 +83,7 @@ PadelApp.setup = (function () {
       '<div class="hint">Pairing <select id="s-pairing">' + Object.keys(PAIRINGS).map(function (k) {
         return '<option value="' + k + '"' + (s.pairing === k ? ' selected' : '') + '>' + PAIRINGS[k] + '</option>';
       }).join('') + '</select>' +
-      '<div class="hint">' + (s.pairing === 'fixed' ? 'Each entry is a fixed team — no genders needed.' : s.pairing === 'mixed' ? 'Mixed pairs a man and a woman — every player needs a gender, and an equal number of men and women is required to start.' : 'Normal pairs players by rank and rotation.') + '</div></div>' +
+      '<div class="hint">' + (s.pairing === 'fixed' ? 'Each entry is a fixed team — no genders needed.' : s.pairing === 'mixed' ? 'Mixed pairs a man and a woman; a gender is required for every player.' : 'Normal pairs players by rank and rotation.') + '</div></div>' +
       '<div class="hint">Courts <select id="s-courts">' + [1, 2, 3, 4, 5, 6, 7, 8].map(function (n) {
         return '<option value="' + n + '"' + (s.numCourts === n ? ' selected' : '') + '>' + n + '</option>';
       }).join('') + '</select></div>' +
@@ -228,14 +220,6 @@ PadelApp.setup = (function () {
       var unit = settings.pairing === 'fixed' ? 'team' : 'player';
       if (active < minPlayers(settings)) { PadelApp.modal.alert('Add at least ' + minPlayers(settings) + ' active ' + unit + 's to start.'); return; }
       if (mixed && PadelApp.state.players().some(function (p) { return p.active && !p.gender; })) { PadelApp.modal.alert('Mixed pairing requires a gender for every active player.'); return; }
-      if (mixed) {
-        var m2 = 0, f2 = 0;
-        PadelApp.state.players().forEach(function (p) {
-          if (!p.active || !p.gender) return;
-          if (p.gender === 'F') f2++; else m2++;
-        });
-        if (m2 !== f2) { PadelApp.modal.alert('Mixed mode needs an equal number of men and women to build a round-robin (you have ' + m2 + ' men and ' + f2 + ' women).'); return; }
-      }
       PadelApp.state.start(settings);
     });
   }

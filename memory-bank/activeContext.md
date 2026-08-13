@@ -4,6 +4,16 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**010b — Mixed Americano round balancing & gender-even verification** (see `changes/010b-mixed-americano-round-balance/CHANGE.md`).
+
+- Bugfix for feature 010's mixed Americano: with 4 players (2M/2F) the schedule built 3 rounds although only 2 man–woman pairings exist per gender — round 3 replayed round 1's pairing. Partner pairs must never repeat in Americano.
+- **Gender-even gate:** mixed mode blocks Start unless active men = active women (modal + live setup warning; the pairing hint explains it). Start-time only — mid-event roster changes still regenerate gracefully.
+- **Round-count cap:** mixed Americano now schedules `min(players.length − 1, men, women)` rounds (2M/2F → 2, 3M/3F → 3, 4M/4F → 4).
+- **Partner-repeat-free pairing:** `buildAmericanoTeams` (mixed) uses a maximum bipartite matching preferring never-used partner edges (Kuhn augmenting path over `partCount ≤ t`) instead of the sequential greedy; on-court gender balance is preserved and the same-gender "best available" fill still runs for leftover players.
+- Normal Americano and both Mexicano modes are unchanged.
+
+**Previous change:**
+
 **010 — Format & pairing redesign (match type × pairing, fixed teams, mixed gender)** (see `changes/010-format-pairing-redesign/CHANGE.md`).
 
 - `settings.format` split into `settings.matchType: 'americano'|'mexicano'` + `settings.pairing: 'normal'|'mixed'|'fixed'`; `normalizeMatch` migrates legacy `format` values (`americano`→normal, `mexicano`→normal, `mixed_americano`→mixed, `mixed_mexicano`→mixed). `isAmericano`/`isMexican` derive from `matchType`, `isMixed` from `pairing`, new `isFixed`.

@@ -98,79 +98,24 @@ PadelApp.match = (function () {
     return { onCourt: onCourt, byes: byeList };
   }
 
-  /* ---- bipartite matching: pair on-court men to women so partner edges that
-     have already been used are avoided while a partner-unique perfect matching
-     exists (Kuhn's augmenting-path search; raise the allowed count t only when
-     no perfect matching fits). Guarantees zero partner repeats in mixed
-     americano as long as each round's on-court genders admit one. ---- */
-  function perfectMixedMatching(ms, fs, maxPart, tracker) {
-    var k = Math.min(ms.length, fs.length);
-    if (!k) return null;
-    var owner = new Array(fs.length).fill(-1);
-    function allowed(mi, fi) { return tracker.partCount(ms[mi].id, fs[fi].id) <= maxPart; }
-    function aug(mi, seen) {
-      for (var fi = 0; fi < fs.length; fi++) {
-        if (seen[fi]) continue;
-        if (!allowed(mi, fi)) continue;
-        seen[fi] = true;
-        if (owner[fi] === -1 || aug(owner[fi], seen)) { owner[fi] = mi; return true; }
-      }
-      return false;
-    }
-    var count = 0;
-    for (var mi = 0; mi < ms.length; mi++) {
-      var seen = new Array(fs.length).fill(false);
-      if (aug(mi, seen)) count++;
-    }
-    if (count !== k) return null;
-    var pairs = [];
-    owner.forEach(function (mmi, fi) { if (mmi !== -1) pairs.push({ mi: mmi, fi: fi }); });
-    return pairs;
-  }
-
-  function mixedMatch(ms, fs, tracker) {
-    var pairs = null;
-    for (var t = 0; t <= 32 && !pairs; t++) pairs = perfectMixedMatching(ms, fs, t, tracker);
-    if (!pairs) pairs = perfectMixedMatching(ms, fs, 64, tracker);
-    if (!pairs) return null;
-    var teams = [], mUsed = {};
-    var fUsed = {};
-    pairs.forEach(function (pp) {
-      teams.push({ players: [ms[pp.mi].id, fs[pp.fi].id] });
-      mUsed[pp.mi] = 1; fUsed[pp.fi] = 1;
-    });
-    var unpaired = [];
-    ms.forEach(function (p, i) { if (!mUsed[i]) unpaired.push(p); });
-    fs.forEach(function (p, i) { if (!fUsed[i]) unpaired.push(p); });
-    return { teams: teams, unpaired: unpaired };
-  }
-
   /* ---- americano teams, minimizing partner repeats ---- */
   function buildAmericanoTeams(onCourt, stats, tracker, mixed) {
     var unpaired = [];
+    var remaining = onCourt.slice().sort(function (a, b) { return eager(a, b, stats); });
     var teams = [];
-    if (mixed) {
-      var ms = [], fs = [];
-      onCourt.forEach(function (p) { if (p.gender === 'F') fs.push(p); else ms.push(p); });
-      var m = mixedMatch(ms, fs, tracker);
-      if (m) { teams = m.teams; unpaired = m.unpaired; }
-    }
-    if (!teams.length && onCourt.length) {
-      var remaining = onCourt.slice().sort(function (a, b) { return eager(a, b, stats); });
-      while (remaining.length) {
-        var p1 = remaining.shift();
-        var bestIdx = -1, bestScore = Infinity;
-        for (var i = 0; i < remaining.length; i++) {
-          var q = remaining[i];
-          if (mixed && q.gender === p1.gender) continue;
-          var s = tracker.partCount(p1.id, q.id);
-          if (s < bestScore) { bestScore = s; bestIdx = i; }
-        }
-        if (bestIdx < 0) { unpaired.push(p1); continue; }
-        var sel = remaining[bestIdx];
-        remaining.splice(bestIdx, 1);
-        teams.push({ players: [p1.id, sel.id] });
+    while (remaining.length) {
+      var p1 = remaining.shift();
+      var bestIdx = -1, bestScore = Infinity;
+      for (var i = 0; i < remaining.length; i++) {
+        var q = remaining[i];
+        if (mixed && q.gender === p1.gender) continue;
+        var s = tracker.partCount(p1.id, q.id);
+        if (s < bestScore) { bestScore = s; bestIdx = i; }
       }
+      if (bestIdx < 0) { unpaired.push(p1); continue; }
+      var sel = remaining[bestIdx];
+      remaining.splice(bestIdx, 1);
+      teams.push({ players: [p1.id, sel.id] });
     }
     /* 10.4.2 mixed total round: pair leftover (same-gender) players among themselves —
        "mixed pair + best available" — before forcing a bye, keeping courts full */
@@ -350,14 +295,6 @@ PadelApp.match = (function () {
     if (isAmericano(settings)) {
       var target = Math.max(players.length - 1, 1);
       target = Math.min(target, 60);
-      if (isMixed(settings)) {
-        /* each male can only partner a female, so a partner-unique round-robin is
-           bounded by the number of men/women — never schedule more rounds than
-           distinct man-woman pairings exist (bugfix 010b) */
-        var men = 0, women = 0;
-        players.forEach(function (p) { if (p.gender === 'F') women++; else men++; });
-        target = Math.min(target, men, women);
-      }
       for (var r = 0; r < target; r++) {
         var round = buildRound(players, prior, currentIndex + r, tracker, settings);
         round.roundNumber = currentIndex + r + 1;
