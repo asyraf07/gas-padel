@@ -4,6 +4,15 @@ Current working state of the project and the latest decisions.
 
 ## Latest change applied
 
+**011b — Score modal cancel fix & live score counter** (see `changes/011b-score-modal-cancel-live-counter/CHANGE.md`).
+
+- The score-picker modal's **Cancel button now works** — `picker()` previously only listened for `.pick-btn` taps, so `data-m="cancel"` was never handled.
+- The quick-input picker gets a corner icon (`±`) that switches the modal into a **live score counter** showing both teams with a `−`/`+` tally per side; tapping updates the court-card inputs live, capped so the total never exceeds `totalPoints`.
+- The counter's single action button reads **Close** while the match is in progress (closes the modal but keeps the tally on the event page) and relabels to **Finish** at `scoreA + scoreB === totalPoints`, saving via `recordScore`/`editScore` (shared `saveCourtScore`).
+- Live mode is sticky per court (`view.liveMode[round:court]`): re-tapping a score opens the live counter with the current score; a `← pick` corner switches back to quick input.
+
+**Previous change:**
+
 **011 — Modal score picker & setup gender editing** (see `changes/011-modal-score-picker/CHANGE.md`).
 
 - The fixed quick-score chips on the Courts tab are replaced by a **score picker modal**: tapping either team's score opens a grid of `0..totalPoints` options (`PadelApp.modal.picker`); picking one sets that side and auto-derives the opponent (`totalPoints − score`). Court-card score inputs are readonly tap-to-pick; Save still uses `recordScore`/`editScore`, and editing a played score opens the same picker.

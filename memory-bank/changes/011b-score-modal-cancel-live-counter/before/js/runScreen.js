@@ -2,7 +2,7 @@
 var PadelApp = window.PadelApp || {};
 
 PadelApp.run = (function () {
-  var view = { tab: 'courts', roundIdx: null, editing: null, liveMode: {} };
+  var view = { tab: 'courts', roundIdx: null, editing: null };
 
   function esc(t) {
     return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
@@ -316,103 +316,7 @@ PadelApp.run = (function () {
         if (!iA || !iB) return;
         if (side === 'a') { iA.value = v; iB.value = tp - v; }
         else { iB.value = v; iA.value = tp - v; }
-      }, {
-        corner: '±',
-        title: 'Switch to live score counter',
-        onCorner: function () {
-          view.liveMode[view.roundIdx + ':' + ci] = true;
-          openLiveCounter(ci, side);
-        }
       });
-    }
-
-    function openLiveCounter(ci, side) {
-      var total = PadelApp.state.settings().totalPoints;
-      var overlay = PadelApp.modal.custom(
-        '<div class="modal-title"><span>Live score &mdash; court ' + (ci + 1) + '</span>' +
-        '<button type="button" class="btnghost small modal-corner" data-modal-corner title="Switch to quick input">&larr; pick</button></div>' +
-        '<div class="modal-body live-counter"></div>' +
-        '<div class="modal-actions"><button class="btn live-finish" data-live-action>Close</button></div>'
-      );
-      var body = overlay.querySelector('.modal-body');
-
-      function cur() {
-        var iA = root.querySelector('#sc-a-' + ci);
-        var iB = root.querySelector('#sc-b-' + ci);
-        return { a: parseInt(iA.value, 10) || 0, b: parseInt(iB.value, 10) || 0 };
-      }
-      function teamName(side2) {
-        var r = PadelApp.state.get();
-        var round = r && r.rounds[view.roundIdx];
-        var court = round && round.courts[ci];
-        var ids = court ? (side2 === 'a' ? court.teamA : court.teamB) : [];
-        return ids.length ? ids.map(function (id) { return esc(pName(id)); }).join(' & ') : 'Team ' + (side2 === 'a' ? 'A' : 'B');
-      }
-      function teamRow(side2) {
-        var s = cur();
-        var v = side2 === 'a' ? s.a : s.b;
-        return '<div class="live-team"><div class="live-name">' + teamName(side2) + '</div>' +
-          '<div class="live-row">' +
-          '<button type="button" class="pick-btn live-minus" data-live-minus="' + side2 + '">&minus;</button>' +
-          '<span class="live-score">' + v + '</span>' +
-          '<button type="button" class="pick-btn live-plus" data-live-plus="' + side2 + '">&plus;</button>' +
-          '</div></div>';
-      }
-      function render() {
-        var s = cur();
-        body.innerHTML = teamRow('a') + '<div class="live-vs">vs</div>' + teamRow('b');
-        var act = overlay.querySelector('[data-live-action]');
-        act.textContent = (s.a + s.b === total) ? 'Finish' : 'Close';
-      }
-      function bump(side2, delta) {
-        var iA = root.querySelector('#sc-a-' + ci);
-        var iB = root.querySelector('#sc-b-' + ci);
-        var a = parseInt(iA.value, 10) || 0;
-        var b = parseInt(iB.value, 10) || 0;
-        if (side2 === 'a') a = Math.min(Math.max(a + delta, 0), total - b);
-        else b = Math.min(Math.max(b + delta, 0), total - a);
-        iA.value = a;
-        iB.value = b;
-      }
-
-      overlay.addEventListener('click', function (e) {
-        var corner = e.target.closest('[data-modal-corner]');
-        if (corner) {
-          PadelApp.modal.close();
-          view.liveMode[view.roundIdx + ':' + ci] = false;
-          openScorePicker(ci, side);
-          return;
-        }
-        var plus = e.target.closest('[data-live-plus]');
-        if (plus) { bump(plus.getAttribute('data-live-plus'), 1); render(); return; }
-        var minus = e.target.closest('[data-live-minus]');
-        if (minus) { bump(minus.getAttribute('data-live-minus'), -1); render(); return; }
-        var act = e.target.closest('[data-live-action]');
-        if (act) {
-          var s = cur();
-          PadelApp.modal.close();
-          if (s.a + s.b === total) saveCourtScore(ci);
-        }
-      });
-      render();
-    }
-
-    function saveCourtScore(ci) {
-      var a = parseInt(root.querySelector('#sc-a-' + ci).value, 10);
-      var b = parseInt(root.querySelector('#sc-b-' + ci).value, 10);
-      var editing = view.editing && view.editing.round === view.roundIdx && view.editing.court === ci;
-      if (editing) {
-        view.editing = null;
-        var err2 = PadelApp.state.editScore(view.roundIdx, ci, a, b);
-        if (err2) { PadelApp.modal.alert(err2, 'Edit score'); return false; }
-        return true;
-      }
-      if (isNaN(a) || isNaN(b)) { PadelApp.modal.alert('Enter both scores.'); return false; }
-      var err = validate(a, b);
-      if (err) { PadelApp.modal.alert(err); return false; }
-      var done = PadelApp.state.recordScore(view.roundIdx, ci, a, b);
-      if (done) PadelApp.modal.alert('Round complete!');
-      return true;
     }
 
     root.addEventListener('click', function (e) {
@@ -437,8 +341,7 @@ PadelApp.run = (function () {
       if (chip && !chip.disabled) {
         var cci = parseInt(chip.getAttribute('data-court'), 10);
         var css = chip.getAttribute('data-pick');
-        if (view.liveMode[view.roundIdx + ':' + cci]) openLiveCounter(cci, css);
-        else openScorePicker(cci, css);
+        openScorePicker(cci, css);
         return;
       }
 
@@ -459,13 +362,27 @@ PadelApp.run = (function () {
 
       var save = e.target.closest('.save');
       if (save) {
-        saveCourtScore(parseInt(save.getAttribute('data-court'), 10));
+        var ci = parseInt(save.getAttribute('data-court'), 10);
+        var a = parseInt(root.querySelector('#sc-a-' + ci).value, 10);
+        var b = parseInt(root.querySelector('#sc-b-' + ci).value, 10);
+        var editing = view.editing && view.editing.round === view.roundIdx && view.editing.court === ci;
+        if (editing) {
+          view.editing = null;
+          var err2 = PadelApp.state.editScore(view.roundIdx, ci, a, b);
+          if (err2) PadelApp.modal.alert(err2, 'Edit score');
+        } else {
+          if (isNaN(a) || isNaN(b)) { PadelApp.modal.alert('Enter both scores.'); return; }
+          var err = validate(a, b);
+          if (err) { PadelApp.modal.alert(err); return; }
+          var done = PadelApp.state.recordScore(view.roundIdx, ci, a, b);
+          if (done) PadelApp.modal.alert('Round complete!');
+        }
         return;
       }
 
       var menu = e.target.closest('[data-act="menu"]');
       if (menu) {
-        view.tab = 'courts'; view.roundIdx = null; view.editing = null; view.liveMode = {};
+        view.tab = 'courts'; view.roundIdx = null; view.editing = null;
         PadelApp.state.leaveEvent();
         return;
       }

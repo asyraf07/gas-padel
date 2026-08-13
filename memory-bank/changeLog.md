@@ -2,6 +2,26 @@
 
 Chronological record of changes applied to the project. Each entry links to its full code snapshots in `changes/`.
 
+## 011b — Score modal cancel fix & live score counter
+
+**Applied:** yes
+
+**Summary:** (1) **Cancel fix** — the score-picker modal's Cancel button (`data-m="cancel"`) was rendered but never handled by `picker()`'s click listener (which only watched `.pick-btn`), so it did nothing; it now closes the modal without picking. (2) **Live score counter** — the quick-input picker gains a corner icon (`±`, new `picker` `opts.corner`/`opts.onCorner`); tapping it switches the modal into a live counter (`new PadelApp.modal.custom(html)` overlay) showing both teams' names with a `−`/`+` tally per side. Taps update the court-card inputs (`#sc-a-N`/`#sc-b-N`) live, capped so the total never exceeds `totalPoints`. The single action button reads **Close** while the total is below target (closes the modal, keeping the tally on the event page) and relabels to **Finish** at `scoreA + scoreB === totalPoints`, saving via the existing `recordScore`/`editScore` flow through a shared `saveCourtScore(ci)` (Save button uses it too). Live mode is sticky per court (`view.liveMode[round + ':' + court]`): re-tapping a score opens the live counter with the current score, and a `← pick` corner switches back to quick input.
+
+**Files changed:**
+
+| File | Nature |
+|------|--------|
+| `js/modal.js` | `picker()` handles `[data-m="cancel"]` + optional corner button; new `custom(html)` and export |
+| `js/runScreen.js` | `openLiveCounter`, `saveCourtScore`, `view.liveMode`, corner wiring in `openScorePicker`, tap handler honors live mode |
+| `css/style.css` | `.modal-corner`; `.live-counter`/`.live-team`/`.live-row`/`.live-score`/`.live-vs`/`.live-finish` |
+| `PLAN.md` | Bugfix 011b section |
+
+**Snapshots:** `changes/011b-score-modal-cancel-live-counter/before/` and `after/`.
+**Details:** `changes/011b-score-modal-cancel-live-counter/CHANGE.md`.
+
+---
+
 ## 011 — Modal score picker & setup gender editing
 
 **Applied:** yes

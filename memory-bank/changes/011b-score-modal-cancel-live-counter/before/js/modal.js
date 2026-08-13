@@ -122,30 +122,16 @@ PadelApp.modal = (function () {
     }
   }
 
-  /* picker(label[, options][, onPick][, opts]) — grid of tappable buttons; onPick(value).
-     opts.corner = html label for a small button in the title corner; opts.onCorner() fires when tapped. */
-  function picker(label, options, onPick, opts) {
-    if (typeof options === 'function') { onPick = options; options = []; opts = {}; }
-    if (typeof onPick !== 'function') { onPick = null; }
-    if (typeof opts !== 'object' || opts === null) opts = {};
+  /* picker(label[, options][, onPick]) — grid of tappable buttons; onPick(value) */
+  function picker(label, options, onPick) {
+    if (typeof options === 'function') { onPick = options; options = []; }
     var btns = (options || []).map(function (v) {
       return '<button type="button" class="pick-btn" data-v="' + v + '">' + v + '</button>';
     }).join('');
-    var title = '<div class="modal-title"><span>' + esc(label) + '</span>' +
-      (opts.corner ? '<button type="button" class="btnghost small modal-corner" data-modal-corner title="' + esc(opts.title || '') + '">' + opts.corner + '</button>' : '') +
-      '</div>';
-    var overlay = open(title +
+    var overlay = open('<div class="modal-title">' + esc(label) + '</div>' +
       '<div class="modal-body pick-grid">' + (btns || '<div class="muted">No options.</div>') + '</div>' +
       '<div class="modal-actions"><button class="btnghost" data-m="cancel">Cancel</button></div>');
     overlay.addEventListener('click', function (e) {
-      var cn = e.target.closest('[data-modal-corner]');
-      if (cn) {
-        close();
-        if (typeof opts.onCorner === 'function') opts.onCorner();
-        return;
-      }
-      var can = e.target.closest('[data-m="cancel"]');
-      if (can) { close(); return; }
       var b = e.target.closest('.pick-btn');
       if (!b) return;
       var v = parseInt(b.getAttribute('data-v'), 10);
@@ -153,11 +139,6 @@ PadelApp.modal = (function () {
       if (typeof onPick === 'function') onPick(v);
     });
     return null;
-  }
-
-  /* custom(html) — open a modal with arbitrary content; returns the overlay for manual wiring */
-  function custom(html) {
-    return open(html);
   }
 
   function bindButtons(overlay, done) {
@@ -172,5 +153,5 @@ PadelApp.modal = (function () {
     });
   }
 
-  return { alert: alert, confirm: confirm, prompt: prompt, form: form, picker: picker, custom: custom, close: close };
+  return { alert: alert, confirm: confirm, prompt: prompt, form: form, picker: picker, close: close };
 })();

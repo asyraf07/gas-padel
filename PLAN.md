@@ -392,6 +392,36 @@ Replace the fixed quick-score chips on the Courts tab with a full score-picker m
 
 ---
 
+# Bugfix 011b — Score modal cancel fix & live score counter
+
+## Goal
+Fix the score picker's Cancel button (which was rendered but never wired), and add a live score-counter mode to the score modal so scores can be tallied point-by-point during a match.
+
+## Fix — Cancel button
+The picker modal rendered a `Cancel` button with `data-m="cancel"` but its click handler only listened for `.pick-btn` taps, so Cancel did nothing. `picker()` now also handles `[data-m="cancel"]` (closes the modal, no value chosen) alongside a new optional corner button.
+
+## Sub-feature 11b.1 — Live score counter modal
+1. **Switch in the corner.** The quick-input picker gets a corner icon (`±`) that switches the modal into a live score counter.
+2. **Live counter.** Shows both teams' names with a `−` / score / `+` per side; tapping `+`/`−` updates that side's score on the event page immediately. Scores are capped so the total never exceeds `totalPoints`.
+3. **Close keeps the score.** A single action button reads `Close`; tapping it closes the modal while leaving the current tally on the court-card inputs.
+4. **Finish saves.** When the two scores sum to `totalPoints`, the button relabels to `Finish`; tapping it saves via the existing `recordScore`/`editScore` flow (same validation as Save).
+5. **Sticky per court.** Once a court is switched to live mode, tapping either score reopens the live counter with the current score; a corner icon on the live counter switches back to quick input.
+
+## Files
+| File | Change |
+|------|--------|
+| `js/modal.js` | `picker()` handles `[data-m="cancel"]` and an optional corner button (`opts.corner`/`opts.onCorner`); new `custom(html)` opens arbitrary-content modals |
+| `js/runScreen.js` | `openScorePicker` gains corner switch → `openLiveCounter(ci, side)`; live counter `+`/`−`, Close/Finish logic; `view.liveMode` per round+court; `saveCourtScore()` shared with Save button |
+| `css/style.css` | `.modal-title` flex + `.modal-corner`; `.live-counter`/`.live-team`/`.live-row`/`.live-score`/`.live-vs`/`.live-finish` |
+
+## Verification
+- `node --check`.
+- Headless: Cancel closes the picker without picking; corner switches picker ↔ live counter; `+`/`−` math with cap at `totalPoints`; button reads Close vs Finish; Finish calls `recordScore`; Close keeps the tally on the page; sticky live mode per court; picking still sets opponent as `total − n`.
+
+> Implementation follows the memory-bank convention: create `memory-bank/changes/011b-score-modal-cancel-live-counter/` with `CHANGE.md` + before/after snapshots, and update `changeLog.md`, `activeContext.md`, `project.md`, and the README table.
+
+---
+
 # Feature 012 — Share as image & photo avatars
 
 ## Goal
